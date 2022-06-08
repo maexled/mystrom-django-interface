@@ -1,0 +1,41 @@
+{% load widget_tweaks %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+<!-- hx-swap="beforeend" - just send the created object -->
+{% if device %}
+<form hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
+{% else %}
+<form hx-post="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
+{% endif %}
+  {% csrf_token %}
+  <div class="modal-header">
+    {% if device %}
+    <h5 class="modal-title" id="exampleModalLabel">Edit device</h5>
+    {% else %}
+    <h5 class="modal-title" id="exampleModalLabel">Create device</h5>
+    {% endif %}
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="mb-3">
+      <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+      {% render_field form.name class="form-control" placeholder="Super Name" %}
+      <div class="invalid-feedback">{{ form.name.errors|first }}</div>
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.ip.id_for_label }}" class="form-label">IP</label>
+      {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
+      <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    {% if device %}
+    <button type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
+    <span class="flex-grow-1"></span>
+    {% endif %}
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+{% endwith %}

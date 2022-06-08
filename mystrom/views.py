@@ -2,30 +2,23 @@ import json
 
 from django.urls import reverse_lazy
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 
 from mystrom_rest.models import MystromDevice, MystromResult
 from .forms import MystromDeviceForm
 
 def index(request):
+    # create device
     if request.method == "POST":
         form = MystromDeviceForm(request.POST)
         if form.is_valid():
             device = form.save()
             # want to return this device, but form.save() does not provied id
             # probably not the best solution
-            return render(request, 'device_table_entry.html', {
-                'device' : MystromDevice.objects.last()
+            return render(request, 'device_table_entries.html', {
+                'devices' : MystromDevice.objects.all()
             })
-#            return HttpResponse(
-#                status=204,
-#                headers={
-#                    'HX-Trigger': json.dumps({
-#                        "movieListChanged": None,
-#                        "showMessage": f"{device.name} added."
-#                    })
-#                })
     else:
         form = MystromDeviceForm()
 
@@ -34,6 +27,42 @@ def index(request):
         'form': form
     })
 
-def delete_device(request, id):
-    if request.method == "DELETE":
-        pass
+def devices(request):
+    if request.method == "POST":
+        form = MystromDeviceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'device_table_entries.html', {
+                'devices' : MystromDevice.objects.all(),
+            })
+    elif request.method == "DELETE":
+        MystromDevice.objects.all().delete()
+        return render(request, 'device_table_entries.html', {
+            'devices' : []
+        })
+    else:
+        form = MystromDeviceForm()
+    return render(request, 'device_form.html', {
+        'form': form
+    })
+
+def device_info(request, id):
+    device = get_object_or_404(MystromDevice, id=id)
+    if request.method == "POST":
+        form = MystromDeviceForm(request.POST, instance=device)
+        if form.is_valid():
+            form.save()
+            return render(request, 'device_table_entries.html', {
+                'devices' : MystromDevice.objects.all(),
+            })
+    elif request.method == "DELETE":
+        MystromDevice.objects.filter(id=device.id).delete()
+        return render(request, 'device_table_entries.html', {
+            'devices' : MystromDevice.objects.all(),
+        })
+    else:
+        form = MystromDeviceForm(instance=device)
+    return render(request, 'device_form.html', {
+        'form': form,
+        'device': device,
+    })

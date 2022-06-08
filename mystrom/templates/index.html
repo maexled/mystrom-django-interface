@@ -40,14 +40,15 @@
         </thead>
         <tbody id="devices-list">
           {% for device in devices %}
-          <tr id="device-{{ movie.name }} device-entry" class="device-row">
+          <tr id="device-{{ device.id }}" class="device-row">
             <td>{{ device.id }}</td>
             <td>{{ device.name }}</td>
             <td>{{ device.ip }}</td>
             <td>
-              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#">
-                Delete Device
+              <button class="btn btn-primary btn-sm" hx-get="{% url 'device' id=device.id %}" hx-target="#dialog">
+                Edit Device
               </button>
+
             </td>
           </tr>
           {% endfor %}
@@ -55,44 +56,23 @@
       </table>
       
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createModal">
+      <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createModal">
         Create Device
+      </button> -->
+      <button hx-get="{% url 'devices' %}" hx-target="#dialog" class="btn btn-primary">
+        Add Device
+      </button>
+
+      <button type="button" class="btn btn-danger" hx-delete="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list">
+        Delete Devices
       </button>
     </div>
 
     <!-- Placeholder for the modal -->
     <!-- Modal -->
     <div id="createModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        {% load widget_tweaks %}
-        {% with WIDGET_ERROR_CLASS='is-invalid' %}
-        <!-- hx-swap="beforeend" - just send the created object -->
-        <form hx-post="" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" hx-swap="beforeend" class="modal-content">
-          {% csrf_token %}
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Create device</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
-              {% render_field form.name class="form-control" placeholder="Super Name" %}
-              <div class="invalid-feedback">{{ form.name.errors|first }}</div>
-            </div>
-            <div class="mb-3">
-              <label for="{{ form.ip.id_for_label }}" class="form-label">IP</label>
-              {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
-              <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Add Device</button>
-          </div>
-        </form>
-        {% endwith %}
+      <div id="dialog" class="modal-dialog" role="document">
+            
       </div>
     </div>
 
@@ -109,10 +89,24 @@
 
   htmx.on("htmx:afterSwap", (e) => {
     console.log(e.detail)
-    if (e.detail.target.id == "devices-list") {
+    if (e.detail.target.id == "dialog") {
+      $("#createModal").modal('show');
+    } else if (e.detail.requestConfig.path == "{% url 'devices' %}") {
+      if (e.detail.requestConfig.verb == "post") {
+        let deviceName = e.detail.requestConfig.parameters.name
+        $("#createModal").modal('hide');
+        toastr.success('Device ' + deviceName + ' created')
+      } else if (e.detail.requestConfig.verb == "delete") {
+        toastr.error('All devices deleted')
+      }
+    } else if (e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
       let deviceName = e.detail.requestConfig.parameters.name
       $("#createModal").modal('hide');
-      toastr.success('Device ' + deviceName + ' created')
+      if (e.detail.requestConfig.verb == "post") {
+        toastr.success('Device ' + deviceName + ' updated')
+      } else if (e.detail.requestConfig.verb == "delete") {
+        toastr.error('Device ' + deviceName + ' deleted')
+      }
     }
   })
 
@@ -121,16 +115,19 @@
   })
 
   htmx.on("htmx:beforeSwap", (e) => {
+    console.log(e.detail)
     // Empty response targeting #dialog => hide the modal
+    /*
     if (e.detail.target.id == "devices-list" && !e.detail.xhr.response) {
+      console.log("EMPTy")
       e.detail.shouldSwap = false
-    }
+    }*/
   })
 
   // Remove dialog content after hiding
   htmx.on("hidden.bs.createModal", () => {
     console.log("HIDDEN")
-    document.getElementById("modal-dialog").innerHTML = ""
+    document.getElementById("dialog").innerHTML = ""
   })
 })()
   </script>
