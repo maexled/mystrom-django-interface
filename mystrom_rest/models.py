@@ -1,11 +1,17 @@
 from django.db import models
+from django.core.validators import RegexValidator
 
 class MystromDevice(models.Model):
 
     id = models.IntegerField(primary_key=True)
 
     name = models.CharField(max_length=16)
-    ip = models.CharField(max_length=16)
+    ip = models.CharField(max_length=16, validators=[
+            RegexValidator(
+                regex='^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$',
+                message='Not valid IP Address',
+            ),
+        ])
 
     def __repr__(self):
         return "<Device(id='%s', name='%s', ip='%s')>" % (

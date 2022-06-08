@@ -9,18 +9,7 @@ from mystrom_rest.models import MystromDevice, MystromResult
 from .forms import MystromDeviceForm
 
 def index(request):
-    # create device
-    if request.method == "POST":
-        form = MystromDeviceForm(request.POST)
-        if form.is_valid():
-            device = form.save()
-            # want to return this device, but form.save() does not provied id
-            # probably not the best solution
-            return render(request, 'device_table_entries.html', {
-                'devices' : MystromDevice.objects.all()
-            })
-    else:
-        form = MystromDeviceForm()
+    form = MystromDeviceForm()
 
     return render(request, 'index.html', {
         'devices' : MystromDevice.objects.all(),
@@ -34,6 +23,10 @@ def devices(request):
             form.save()
             return render(request, 'device_table_entries.html', {
                 'devices' : MystromDevice.objects.all(),
+            })
+        else:
+            return render(request, 'device_form_rows.html', {
+                'form' : form,
             })
     elif request.method == "DELETE":
         MystromDevice.objects.all().delete()
@@ -54,6 +47,10 @@ def device_info(request, id):
             form.save()
             return render(request, 'device_table_entries.html', {
                 'devices' : MystromDevice.objects.all(),
+            })
+        else:
+             return render(request, 'device_form_rows.html', {
+                'form' : form,
             })
     elif request.method == "DELETE":
         MystromDevice.objects.filter(id=device.id).delete()
