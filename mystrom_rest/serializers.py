@@ -7,6 +7,17 @@ class MystromDeviceSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = MystromDevice
+        read_only_fields = ('id',)
         fields = ('id',
                   'name',
                   'ip')
+
+class MystromResultSerializer(serializers.ModelSerializer):
+ 
+    class Meta:
+        model = MystromResult
+        fields = ('power',
+                  'ws',
+                  'relay',
+                  'temperature',
+                  'date')

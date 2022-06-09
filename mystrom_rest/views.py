@@ -4,7 +4,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework import status
  
 from .models import MystromResult, MystromDevice
-from .serializers import MystromDeviceSerializer
+from .serializers import MystromDeviceSerializer, MystromResultSerializer
 from rest_framework.decorators import api_view
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -21,6 +21,7 @@ def device_list(request):
         device_serializer = MystromDeviceSerializer(data=device_data)
         if device_serializer.is_valid():
             device_serializer.save()
+            
             return JsonResponse(device_serializer.data, status=status.HTTP_201_CREATED) 
         return JsonResponse(device_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -51,4 +52,16 @@ def device_detail(request, id):
     elif request.method == 'DELETE': 
         device.delete() 
         return JsonResponse({'message': 'Device was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+def device_results(request, id):
+    try: 
+        device = MystromDevice.objects.get(id=id) 
+    except MystromDevice.DoesNotExist: 
+        return JsonResponse({'message': 'The device does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+    results = MystromResult.objects.filter(device_id=device.id)
+
+    if request.method == 'GET': 
+        result_serializer = MystromResultSerializer(results, many=True) 
+        return JsonResponse(result_serializer.data, safe=False) 
     
