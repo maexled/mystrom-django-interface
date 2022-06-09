@@ -29,26 +29,11 @@
           </tr>
         </thead>
         <tbody id="devices-list">
-          {% for device in devices %}
-          <tr id="device-{{ device.id }}" class="device-row">
-            <td>{{ device.id }}</td>
-            <td>{{ device.name }}</td>
-            <td>{{ device.ip }}</td>
-            <td>
-              <button class="btn btn-primary btn-sm" hx-get="{% url 'device' id=device.id %}" hx-target="#dialog">
-                Edit Device
-              </button>
-
-            </td>
-          </tr>
-          {% endfor %}
+          {% include "device_table_entries.html" with devices=devices %}
         </tbody>
       </table>
       
       <!-- Button trigger modal -->
-      <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createModal">
-        Create Device
-      </button> -->
       <button hx-get="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#dialog" class="btn btn-primary">
         Add Device
       </button>
@@ -78,17 +63,12 @@
     ;(function () {
 
   htmx.on("htmx:afterSwap", (e) => {
-    console.log(e.detail)
     if (e.detail.target.id == "dialog") {
       $("#createModal").modal('show');
     } else if (e.detail.requestConfig.path == "{% url 'devices' %}") {
       if (e.detail.requestConfig.verb == "post") {
-        if (e.detail.xhr.response.includes("<form")) {
-          console.log("Response contains form")
-        }
         let deviceName = e.detail.requestConfig.parameters.name
         $("#createModal").modal('hide');
-        
         toastr.success('Device ' + deviceName + ' created')
       } else if (e.detail.requestConfig.verb == "delete") {
         toastr.error('All devices deleted')
@@ -103,18 +83,11 @@
       }
     }
   })
-  htmx.on("showMessage", (e) => {
-    toastr.error('ALARM')
-  })
-
-  $('#exampleToast').on('hidden.bs.toast', function () {
-    console.log("HELLO THERE")
-  })
 
   htmx.on("htmx:beforeSwap", (e) => {
-    // Empty response targeting #dialog => hide the modal
     if (e.detail.requestConfig.path == "{% url 'devices' %}" || e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
       if (e.detail.requestConfig.verb == "post") {
+        // when it contains invalid feedback, we do no want to swap and show error in form
         if (e.detail.xhr.response.includes("invalid-feedback")) {
           e.detail.shouldSwap = false
           console.log("BLOCK")
