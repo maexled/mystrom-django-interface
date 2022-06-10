@@ -60,51 +60,55 @@
   
   <script>
     
-    ;(function () {
+  ;(function () {
 
-  htmx.on("htmx:afterSwap", (e) => {
-    if (e.detail.target.id == "dialog") {
-      $("#createModal").modal('show');
-    } else if (e.detail.requestConfig.path == "{% url 'devices' %}") {
-      if (e.detail.requestConfig.verb == "post") {
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target.id == "dialog") {
+        $("#createModal").modal('show');
+      } else if (e.detail.requestConfig.path == "{% url 'devices' %}") {
+        if (e.detail.requestConfig.verb == "post") {
+          let deviceName = e.detail.requestConfig.parameters.name
+          $("#createModal").modal('hide');
+          toastr.success('Device ' + deviceName + ' created')
+        } else if (e.detail.requestConfig.verb == "delete") {
+          toastr.error('All devices deleted')
+        }
+      } else if (e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
         let deviceName = e.detail.requestConfig.parameters.name
         $("#createModal").modal('hide');
-        toastr.success('Device ' + deviceName + ' created')
-      } else if (e.detail.requestConfig.verb == "delete") {
-        toastr.error('All devices deleted')
-      }
-    } else if (e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
-      let deviceName = e.detail.requestConfig.parameters.name
-      $("#createModal").modal('hide');
-      if (e.detail.requestConfig.verb == "post") {
-        toastr.success('Device ' + deviceName + ' updated')
-      } else if (e.detail.requestConfig.verb == "delete") {
-        toastr.error('Device ' + deviceName + ' deleted')
-      }
-    }
-  })
-
-  htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.requestConfig.path == "{% url 'devices' %}" || e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
-      if (e.detail.requestConfig.verb == "post") {
-        // when it contains invalid feedback, we do no want to swap and show error in form
-        if (e.detail.xhr.response.includes("invalid-feedback")) {
-          e.detail.shouldSwap = false
-          console.log("BLOCK")
-          let response = e.detail.xhr.response
-          document.getElementById("modal-body").innerHTML = response
+        if (e.detail.requestConfig.verb == "post") {
+          toastr.success('Device ' + deviceName + ' updated')
+        } else if (e.detail.requestConfig.verb == "delete") {
+          toastr.error('Device ' + deviceName + ' deleted')
         }
-        
-      } 
-    }
-  })
+      }
+    })
 
-  // Remove dialog content after hiding
-  htmx.on("hidden.bs.createModal", () => {
-    console.log("HIDDEN")
-    document.getElementById("dialog").innerHTML = ""
-  })
-})()
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (e.detail.requestConfig.path == "{% url 'devices' %}" || e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
+        if (e.detail.requestConfig.verb == "post") {
+          // when it contains invalid feedback, we do no want to swap and show error in form
+          if (e.detail.xhr.response.includes("invalid-feedback")) {
+            e.detail.shouldSwap = false
+            let response = e.detail.xhr.response
+            document.getElementById("modal-body").innerHTML = response
+
+            // reset save buton from "Saving..." to "Save"
+            submit_button = document.getElementById("modal-submit")
+            submit_button.innerHTML = "Save"
+            submit_button.disabled = false
+          }
+          
+        } 
+      }
+    })
+
+    // Remove dialog content after hiding
+    htmx.on("hidden.bs.createModal", () => {
+      console.log("HIDDEN")
+      document.getElementById("dialog").innerHTML = ""
+    })
+  })()
   </script>
 
   </body>

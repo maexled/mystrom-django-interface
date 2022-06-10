@@ -29,14 +29,31 @@
       <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
     </div>
   </div>
-  <div id="modal-errors"></div>
   <div class="modal-footer">
     {% if device %}
-    <button type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
+    <button id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
     <span class="flex-grow-1"></span>
     {% endif %}
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button id="modal-submit" type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>
 {% endwith %}
+<script>
+  var submit_button = document.getElementById("modal-submit");
+	// add event listener for the button, for action "click"
+	submit_button.addEventListener("click", () => {
+    submit_button.innerHTML = "Saving...."
+    submit_button.disabled = true
+  });
+</script>
+{% if device %}
+<script>
+  var delete_button = document.getElementById("modal-delete");
+	// add event listener for the button, for action "click"
+	delete_button.addEventListener("click", () => {
+    delete_button.innerHTML = "Removing...."
+    delete_button.disabled = true
+  });
+</script>
+{% endif %}
