@@ -3,7 +3,7 @@ from django.core.validators import RegexValidator
 
 class MystromDevice(models.Model):
 
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     name = models.CharField(max_length=16)
     ip = models.CharField(max_length=16, validators=[
@@ -22,9 +22,9 @@ class MystromDevice(models.Model):
 
 class MystromResult(models.Model):
 
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
-    device_id = models.ForeignKey(MystromDevice, on_delete=models.PROTECT)
+    device = models.ForeignKey(MystromDevice, on_delete=models.PROTECT)
 
     power = models.FloatField()
     ws = models.FloatField()

@@ -59,9 +59,8 @@ def device_results(request, id):
         device = MystromDevice.objects.get(id=id) 
     except MystromDevice.DoesNotExist: 
         return JsonResponse({'message': 'The device does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-    results = MystromResult.objects.filter(device_id=device.id)
+    results = MystromResult.objects.filter(device_id=device)
 
     if request.method == 'GET': 
         result_serializer = MystromResultSerializer(results, many=True) 
         return JsonResponse(result_serializer.data, safe=False) 
-    
