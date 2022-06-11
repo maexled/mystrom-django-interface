@@ -38,6 +38,10 @@ docker run \
    -e DB_PASSWORD=password \
    -e DB_HOST=host \
    -e DB_PORT=port \
+   -e SECRET_KEY=secretKey \
+   -e ALLOWED_HOSTS=localhost,mysite.com \
+   -e CORS_ORIGIN_ALLOW_ALL=False \
+   -e CORS_ORIGIN_WHITELIST=http://localhost:8000,http://mysite.com \
    -e TZ=Europe/Berlin \
    ghcr.io/maexled/mystrom-django-interface
 ```
