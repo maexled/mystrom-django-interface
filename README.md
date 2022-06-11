@@ -33,6 +33,11 @@ python manage.py runserver
 docker run \
    --name mystrom-interface \
    -p 8000:8000 \
+   -e DB_NAME=db-name \
+   -e DB_USER=username \
+   -e DB_PASSWORD=password \
+   -e DB_HOST=host \
+   -e DB_PORT=port \
    -e TZ=Europe/Berlin \
    ghcr.io/maexled/mystrom-django-interface
 ```
