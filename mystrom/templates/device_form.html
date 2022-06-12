@@ -38,16 +38,16 @@
   </div>
 </form>
 {% endwith %}
-<script>
+<script type="application/javascript">
   var submit_button = document.getElementById("modal-submit");
 	// add event listener for the button, for action "click"
-	submit_button.addEventListener("click", () => {
+	submit_button.addEventListener("click", function() {
     submit_button.innerHTML = "Saving...."
     submit_button.disabled = true
   });
 </script>
 {% if device %}
-<script>
+<script type="application/javascript">
   var delete_button = document.getElementById("modal-delete");
 	// add event listener for the button, for action "click"
 	delete_button.addEventListener("click", () => {
