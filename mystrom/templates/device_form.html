@@ -1,9 +1,9 @@
 {% load widget_tweaks %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 {% if device %}
-<form hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
+<form onsubmit="onSubmit()" hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
 {% else %}
-<form hx-post="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
+<form onsubmit="onSubmit()" hx-post="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
 {% endif %}
   {% csrf_token %}
   <div class="modal-header">
@@ -21,7 +21,7 @@
   </div>
   <div class="modal-footer">
     {% if device %}
-    <button id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
+    <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
     <span class="flex-grow-1"></span>
     {% endif %}
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -29,21 +29,20 @@
   </div>
 </form>
 {% endwith %}
-<script type="application/javascript">
+<script>
   var submit_button = document.getElementById("modal-submit");
-	// add event listener for the button, for action "click"
-	submit_button.addEventListener("click", function() {
+	function onSubmit() {
     submit_button.innerHTML = "Saving...."
     submit_button.disabled = true
-  });
+  }
+  
 </script>
 {% if device %}
-<script type="application/javascript">
+<script>
   var delete_button = document.getElementById("modal-delete");
-	// add event listener for the button, for action "click"
-	delete_button.addEventListener("click", () => {
+	function onDelete() {
     delete_button.innerHTML = "Removing...."
     delete_button.disabled = true
-  });
+  }
 </script>
 {% endif %}
