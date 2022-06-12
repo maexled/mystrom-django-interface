@@ -17,16 +17,7 @@
     </button>
   </div>
   <div id="modal-body" class="modal-body">
-    <div class="mb-3">
-      <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
-      {% render_field form.name class="form-control" placeholder="Super Name" %}
-      <div class="invalid-feedback">{{ form.name.errors|first }}</div>
-    </div>
-    <div class="mb-3">
-      <label for="{{ form.ip.id_for_label }}" class="form-label">IP</label>
-      {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
-      <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
-    </div>
+    {% include "device_form_rows.html" with form=form %}
   </div>
   <div class="modal-footer">
     {% if device %}
