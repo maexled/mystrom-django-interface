@@ -1,6 +1,5 @@
 {% load widget_tweaks %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
-<!-- hx-swap="beforeend" - just send the created object -->
 {% if device %}
 <form hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
 {% else %}

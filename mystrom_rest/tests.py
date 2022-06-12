@@ -6,7 +6,7 @@ from .models import MystromDevice
 class MystromDeviceTests(APITestCase):
     def test_create_device(self):
         """
-        Ensure we can create a new account object.
+        Ensure we can create a new device object.
         """
         url = reverse('rest_device_index')
         data = {'name': 'NewDevice', 'ip': '192.168.0.196'}
@@ -18,7 +18,7 @@ class MystromDeviceTests(APITestCase):
 
     def test_create_device_fail_invalid_ip(self):
         """
-        Ensure we can create a new account object.
+        Ensure we can not create a new device object when ip is invalid.
         """
         url = reverse('rest_device_index')
         data = {'name': 'NewDevice', 'ip': 'notanip'}
