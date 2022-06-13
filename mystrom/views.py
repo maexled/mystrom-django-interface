@@ -16,6 +16,11 @@ def index(request):
         'form': form
     })
 
+def results(request):
+    return render(request, 'results.html', {
+        'devices' : MystromDevice.objects.all()
+    })
+
 def devices(request):
     if request.method == "POST":
         form = MystromDeviceForm(request.POST)
