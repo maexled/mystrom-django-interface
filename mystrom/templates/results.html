@@ -1,90 +1,72 @@
 {% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/css/toastr.css">
-    <title>MyStrom Devices</title>
-  </head>
+{% block content %}
+<div class="container">
+  <div class="px-5 my-5 text-center">
+    <h1>MyStrom Results</h1>
+    <p></p>
+  </div>
 
-  <body>
-    {% block content %}
-    <div class="container">
-      <div class="px-5 my-5 text-center">
-        <h1>MyStrom Results</h1>
-        <p></p>
-      </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>IP</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="devices-list">
+      {% for device in devices %}
+      <tr id="device-{{ device.id }}" class="device-row">
+        <td>{{ device.id }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.ip }}</td>
+        <td>
 
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>IP</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="devices-list">
-          {% for device in devices %}
-          <tr id="device-{{ device.id }}" class="device-row">
-            <td>{{ device.id }}</td>
-            <td>{{ device.name }}</td>
-            <td>{{ device.ip }}</td>
-            <td>
-              
-              <div class="form-row">
-                <div class="form-row">
-                  <div class="form-group col-md-4">
-                    <label for="start-date-{{ device.id }}">Start date</label>
-                    <input placeholder="Select date" type="date" id="start-date-{{ device.id }}" class="form-control">
-                  </div>
-
-                  <div class="form-group col-md-4">
-                    <label for="end-date-{{ device.id }}">End date</label>
-                    <input placeholder="Select date" type="date" id="end-date-{{ device.id }}" class="form-control">
-                  </div>
-                  <div class="form-group col-md-2">
-                    <button class="btn btn-danger" id="reset-dates-{{ device.id }}" onclick="resetDates(this)">
-                      Reset
-                    </button>
-                  </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col-md-9">
-                    <button class="btn btn-info" id="{{ device.id }}" onclick="toggleChart(this.id)">
-                      Show Chart for Device 1
-                    </button>
-                  </div>
-                </div>
+          <div class="form-row">
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="start-date-{{ device.id }}">Start date</label>
+                <input placeholder="Select date" type="date" id="start-date-{{ device.id }}" class="form-control">
               </div>
-              
-          
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    <div id="chartContainer">
 
-    </div>
-    {% endblock %}
+              <div class="form-group col-md-4">
+                <label for="end-date-{{ device.id }}">End date</label>
+                <input placeholder="Select date" type="date" id="end-date-{{ device.id }}" class="form-control">
+              </div>
+              <div class="form-group col-md-2">
+                <button class="btn btn-danger" id="reset-dates-{{ device.id }}" onclick="resetDates(this)">
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-9">
+                <button class="btn btn-info" id="{{ device.id }}" onclick="toggleChart(this.id)">
+                  Show Chart for Device {{ device.id }}
+                </button>
+              </div>
+            </div>
+          </div>
 
-  <script src="https://unpkg.com/htmx.org@1.6.1/dist/htmx.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.0.1/js/toastr.js"></script>
 
-  {% block scripts %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div id="chartContainer">
 
-  <script type="application/javascript">
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+
+<script type="application/javascript">
   var shown = []
 
   function resetDates(el) {
@@ -100,15 +82,15 @@
     if (shown.includes(id)) {
       document.getElementById(elementId).outerHTML = ""
 
-      document.getElementById(id).innerHTML = "Show Chart for Device " + id  
+      document.getElementById(id).innerHTML = "Show Chart for Device " + id
       shown = shown.filter(shownId => shownId != id)
     } else {
       createdElement = document.createElement("div")
       createdElement.setAttribute("id", elementId)
       document.getElementById("chartContainer").appendChild(createdElement)
       chart = loadChart(id, elementId, startDateElement.value, endDateElement.value)
-      
-      document.getElementById(id).innerHTML = "Hide Chart for Device " + id  
+
+      document.getElementById(id).innerHTML = "Hide Chart for Device " + id
       shown.push(id)
     }
 
@@ -118,21 +100,21 @@
     startQuery = startDate == "" ? "" : "?start=" + startDate
     endQuery = endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate
     console.log("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery)
-    $.get("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function(data) {
+    $.get("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function (data) {
       var options = {
-          series: [{
-            name: "Power",
-            data: data.map(entry => entry.power)
+        series: [{
+          name: "Power",
+          data: data.map(entry => entry.power)
         },
         {
-            name: "WS",
-            data: data.map(entry => entry.ws)
+          name: "WS",
+          data: data.map(entry => entry.ws)
         },
         {
-            name: "Temperature",
-            data: data.map(entry => entry.temperature)
+          name: "Temperature",
+          data: data.map(entry => entry.temperature)
         }],
-          chart: {
+        chart: {
           height: 500,
           type: 'line',
           zoom: {
@@ -165,15 +147,12 @@
         yaxis: {
           decimalsInFloat: 2
         }
-        };
+      };
 
-        var chart = new ApexCharts(document.querySelector("#" + elementId), options);
-        chart.render();
-      
+      var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+      chart.render();
+
     })
   }
-  </script>
-  {% endblock %}
-
-  </body>
-</html>
+</script>
+{% endblock %}

@@ -1,13 +1,13 @@
 {% load widget_tweaks %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 <div class="mb-3">
-    <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
-    {% render_field form.name class="form-control" placeholder="Super Name" %}
-    <div class="invalid-feedback">{{ form.name.errors|first }}</div>
-  </div>
-  <div class="mb-3">
-    <label for="{{ form.ip.id_for_label }}" class="form-label">IP</label>
-    {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
-    <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
+  <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+  {% render_field form.name class="form-control" placeholder="Super Name" %}
+  <div class="invalid-feedback">{{ form.name.errors|first }}</div>
+</div>
+<div class="mb-3">
+  <label for="{{ form.ip.id_for_label }}" class="form-label">IP</label>
+  {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
+  <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
 </div>
 {% endwith %}
