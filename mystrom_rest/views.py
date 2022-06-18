@@ -7,6 +7,8 @@ from .models import MystromResult, MystromDevice
 from .serializers import MystromDeviceSerializer, MystromResultSerializer
 from rest_framework.decorators import api_view
 
+import datetime
+
 @api_view(['GET', 'POST', 'DELETE'])
 def device_list(request):
     if request.method == 'GET':
@@ -59,7 +61,10 @@ def device_results(request, id):
         device = MystromDevice.objects.get(id=id) 
     except MystromDevice.DoesNotExist: 
         return JsonResponse({'message': 'The device does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-    results = MystromResult.objects.filter(device_id=device)
+    
+    start_date=request.GET.get('start', datetime.datetime.now() + datetime.timedelta(days=-1))
+    end_date=request.GET.get('end', datetime.datetime.now())
+    results = MystromResult.objects.filter(device_id=device, date__range=[start_date,end_date])
 
     if request.method == 'GET': 
         result_serializer = MystromResultSerializer(results, many=True) 

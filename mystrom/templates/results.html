@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <div class="px-5 my-5 text-center">
+    <h1>MyStrom Results</h1>
+    <p></p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>IP</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="devices-list">
+      {% for device in devices %}
+      <tr id="device-{{ device.id }}" class="device-row">
+        <td>{{ device.id }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.ip }}</td>
+        <td>
+
+          <div class="form-row">
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="start-date-{{ device.id }}">Start date</label>
+                <input placeholder="Select date" type="date" id="start-date-{{ device.id }}" class="form-control">
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="end-date-{{ device.id }}">End date</label>
+                <input placeholder="Select date" type="date" id="end-date-{{ device.id }}" class="form-control">
+              </div>
+              <div class="form-group col-md-2">
+                <button class="btn btn-danger" id="reset-dates-{{ device.id }}" onclick="resetDates(this)">
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-9">
+                <button class="btn btn-info" id="{{ device.id }}" onclick="toggleChart(this.id)">
+                  Show Chart for Device {{ device.id }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div id="chartContainer">
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+
+<script type="application/javascript">
+  var shown = []
+
+  function resetDates(el) {
+    id = String(el.id).split("-")[2]
+    document.getElementById("start-date-" + id).value = ""
+    document.getElementById("end-date-" + id).value = ""
+  }
+
+  function toggleChart(id) {
+    startDateElement = document.getElementById("start-date-" + id)
+    endDateElement = document.getElementById("end-date-" + id)
+    elementId = "chart-" + id
+    if (shown.includes(id)) {
+      document.getElementById(elementId).outerHTML = ""
+
+      document.getElementById(id).innerHTML = "Show Chart for Device " + id
+      shown = shown.filter(shownId => shownId != id)
+    } else {
+      createdElement = document.createElement("div")
+      createdElement.setAttribute("id", elementId)
+      document.getElementById("chartContainer").appendChild(createdElement)
+      chart = loadChart(id, elementId, startDateElement.value, endDateElement.value)
+
+      document.getElementById(id).innerHTML = "Hide Chart for Device " + id
+      shown.push(id)
+    }
+
+  }
+
+  function loadChart(id, elementId, startDate, endDate) {
+    startQuery = startDate == "" ? "" : "?start=" + startDate
+    endQuery = endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate
+    console.log("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery)
+    $.get("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function (data) {
+      var options = {
+        series: [{
+          name: "Power",
+          data: data.map(entry => entry.power)
+        },
+        {
+          name: "WS",
+          data: data.map(entry => entry.ws)
+        },
+        {
+          name: "Temperature",
+          data: data.map(entry => entry.temperature)
+        }],
+        chart: {
+          height: 500,
+          type: 'line',
+          zoom: {
+            enabled: true
+          }
+        },
+        colors: ['#C80815', '#6050dc', '#39FF14'],
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          width: 2,
+          curve: 'straight'
+        },
+        title: {
+          text: 'Power Usage',
+          align: 'left'
+        },
+        grid: {
+          row: {
+            colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+            opacity: 0.5
+          },
+        },
+        xaxis: {
+          categories: data.map(entry => new Date(entry.date).toLocaleString()),
+          hideOverlappingLabels: true,
+          tickAmount: 5
+        },
+        yaxis: {
+          decimalsInFloat: 2
+        }
+      };
+
+      var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+      chart.render();
+
+    })
+  }
+</script>
+{% endblock %}
