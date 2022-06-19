@@ -1,12 +1,11 @@
-FROM python:3.9-slim
+FROM python:3.9-alpine
 
 WORKDIR /app
 
 COPY requirements.txt ./
 
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y gcc default-libmysqlclient-dev
+RUN apk add gcc musl-dev mariadb-connector-c-dev
 
 
 RUN pip install --no-cache-dir --upgrade pip && \
