@@ -92,6 +92,11 @@
       informationElement = document.createElement("div")
       informationElement.setAttribute("id", elementId + "-information")
       createdElement.appendChild(informationElement);
+
+      chartElement = document.createElement("div")
+      chartElement.setAttribute("id", elementId + "-chart")
+      createdElement.appendChild(chartElement)
+
       chart = loadChart(id, elementId, startDateElement.value, endDateElement.value)
 
       document.getElementById(id).innerHTML = "Hide Chart for Device " + id
@@ -171,7 +176,7 @@
         }
       };
 
-      const chart = new ApexCharts(document.querySelector("#" + elementId), options);
+      const chart = new ApexCharts(document.querySelector("#" + elementId + "-chart"), options);
       chart.render();
 
     })
