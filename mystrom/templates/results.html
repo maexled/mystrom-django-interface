@@ -88,6 +88,10 @@
       createdElement = document.createElement("div")
       createdElement.setAttribute("id", elementId)
       document.getElementById("chartContainer").appendChild(createdElement)
+
+      informationElement = document.createElement("div")
+      informationElement.setAttribute("id", elementId + "-information")
+      createdElement.appendChild(informationElement);
       chart = loadChart(id, elementId, startDateElement.value, endDateElement.value)
 
       document.getElementById(id).innerHTML = "Hide Chart for Device " + id
@@ -101,18 +105,36 @@
     endQuery = endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate
     console.log("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery)
     $.get("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function (data) {
-      var options = {
+      const firstDate = new Date(data[0].date);
+      const lastDate = new Date(data[data.length - 1].date);
+      const differenceBetweenDates = lastDate - firstDate;
+      const hoursDifferenceBetweedDates = differenceBetweenDates / 1000 / 60 / 60;
+      
+      const powerList = data.map(entry => entry.power);
+      const WsList = data.map(entry => entry.ws);
+      const temperatureList = data.map(entry => entry.temperature);
+      var total = 0;
+      for (var power of powerList) {
+        total += power;
+      }
+      const average = total / powerList.length;
+      const totalProducedkWh = (average * hoursDifferenceBetweedDates) / 1000;
+
+      document.getElementById(elementId + "-information").innerHTML = "<h5>Average of " + hoursDifferenceBetweedDates.toFixed(2) + " hours: " + average.toFixed(2) + "Wh</h5>"
+      document.getElementById(elementId + "-information").innerHTML += "<h5>Leads to <b>" + totalProducedkWh.toFixed(2) + "kWh</b> produced in " + hoursDifferenceBetweedDates.toFixed(2) + " hours</h5>";
+
+      const options = {
         series: [{
           name: "Power",
-          data: data.map(entry => entry.power)
+          data: powerList
         },
         {
           name: "WS",
-          data: data.map(entry => entry.ws)
+          data: WsList
         },
         {
           name: "Temperature",
-          data: data.map(entry => entry.temperature)
+          data: temperatureList
         }],
         chart: {
           height: 500,
@@ -149,7 +171,7 @@
         }
       };
 
-      var chart = new ApexCharts(document.querySelector("#" + elementId), options);
+      const chart = new ApexCharts(document.querySelector("#" + elementId), options);
       chart.render();
 
     })
