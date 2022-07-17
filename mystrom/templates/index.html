@@ -33,7 +33,6 @@
 </div>
 
 <!-- Placeholder for the modal -->
-<!-- Modal -->
 <div id="createModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div id="dialog" class="modal-dialog" role="document">
             
@@ -51,19 +50,19 @@
         $("#createModal").modal('show');
       } else if (e.detail.requestConfig.path == "{% url 'devices' %}") {
         if (e.detail.requestConfig.verb == "post") {
-          let deviceName = e.detail.requestConfig.parameters.name
+          const deviceName = e.detail.requestConfig.parameters.name;
           $("#createModal").modal('hide');
-          toastr.success('Device ' + deviceName + ' created')
+          toastr.success('Device ' + deviceName + ' created');
         } else if (e.detail.requestConfig.verb == "delete") {
-          toastr.error('All devices deleted')
+          toastr.error('All devices deleted');
         }
       } else if (e.detail.requestConfig.path.startsWith("{% url 'devices' %}")) {
-        let deviceName = e.detail.requestConfig.parameters.name
+        const deviceName = e.detail.requestConfig.parameters.name;
         $("#createModal").modal('hide');
         if (e.detail.requestConfig.verb == "post") {
-          toastr.success('Device ' + deviceName + ' updated')
+          toastr.success('Device ' + deviceName + ' updated');
         } else if (e.detail.requestConfig.verb == "delete") {
-          toastr.error('Device ' + deviceName + ' deleted')
+          toastr.error('Device ' + deviceName + ' deleted');
         }
       }
     })
@@ -73,14 +72,14 @@
         if (e.detail.requestConfig.verb == "post") {
           // when it contains invalid feedback, we do no want to swap and show error in form
           if (e.detail.xhr.response.includes("invalid-feedback")) {
-            e.detail.shouldSwap = false
-            let response = e.detail.xhr.response
-            document.getElementById("modal-body").innerHTML = response
+            e.detail.shouldSwap = false;
+            const response = e.detail.xhr.response;
+            document.getElementById("modal-body").innerHTML = response;
 
             // reset save buton from "Saving..." to "Save"
-            submit_button = document.getElementById("modal-submit")
-            submit_button.innerHTML = "Save"
-            submit_button.disabled = false
+            const submit_button = document.getElementById("modal-submit");
+            submit_button.innerHTML = "Save";
+            submit_button.disabled = false;
           }
         }
       }
@@ -88,8 +87,8 @@
 
     // Remove dialog content after hiding
     htmx.on("hidden.bs.createModal", () => {
-      console.log("HIDDEN")
-      document.getElementById("dialog").innerHTML = ""
+      console.log("HIDDEN");
+      document.getElementById("dialog").innerHTML = "";
     })
   })()
 </script>

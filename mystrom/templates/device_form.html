@@ -30,19 +30,19 @@
 </form>
 {% endwith %}
 <script>
-  var submit_button = document.getElementById("modal-submit");
+  const submit_button = document.getElementById("modal-submit");
 	function onSubmit() {
-    submit_button.innerHTML = "Saving...."
-    submit_button.disabled = true
+    submit_button.innerHTML = "Saving....";
+    submit_button.disabled = true;
   }
   
 </script>
 {% if device %}
 <script>
-  var delete_button = document.getElementById("modal-delete");
+  const delete_button = document.getElementById("modal-delete");
 	function onDelete() {
-    delete_button.innerHTML = "Removing...."
-    delete_button.disabled = true
+    delete_button.innerHTML = "Removing....";
+    delete_button.disabled = true;
   }
 </script>
 {% endif %}
