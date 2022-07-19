@@ -13,4 +13,5 @@ class MystromDeviceForm(forms.ModelForm):
         fields = [
             "name",
             "ip",
+            "active"
         ]

@@ -10,4 +10,8 @@
   {% render_field form.ip class="form-control" placeholder="192.168.0.196" %}
   <div class="invalid-feedback">{{ form.ip.errors|first }}</div>
 </div>
+<div class="mb-3">
+  <label for="{{ form.active.id_for_label }}" class="form-label">Active</label>
+  {% render_field form.active class="form-control" %}
+</div>
 {% endwith %}
