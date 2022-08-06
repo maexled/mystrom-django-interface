@@ -70,7 +70,7 @@ def device_results(request, id):
 
 
     if request.method == 'GET':
-        if request.GET.get('minimize', "false") != "false":
+        if request.GET.get('minimize', "true") != "false":
             minimizedList = minimizeResultList(results)
         else:
             minimizedList = results
