@@ -95,15 +95,13 @@ def minimizeResultList(results) -> list:
     elif(len(results) > 500):
         skip = 2
         
-    currentSkip = 1
+    currentSkip = 0
     currentObj = None
     for result in results.iterator():
-        if currentObj == None:
-            currentObj = result
-
         if currentSkip % skip == 0:
-            calculateAverage(currentObj, currentSkip)
-            resultList.append(currentObj)
+            if currentObj != None:
+                calculateAverage(currentObj, currentSkip)
+                resultList.append(currentObj)
             currentObj = result
             currentSkip = 0
         else:
