@@ -64,8 +64,50 @@ def device_results(request, id):
     
     start_date=request.GET.get('start', datetime.datetime.now() + datetime.timedelta(days=-1))
     end_date=request.GET.get('end', datetime.datetime.now())
+
     results = MystromResult.objects.filter(device_id=device, date__range=[start_date,end_date])
 
-    if request.method == 'GET': 
-        result_serializer = MystromResultSerializer(results, many=True) 
+    if request.method == 'GET':
+        if request.GET.get('minimize', "true") != "false":
+            minimizedList = minimizeResultList(results)
+        else:
+            minimizedList = results
+        result_serializer = MystromResultSerializer(minimizedList, many=True) 
+
         return JsonResponse(result_serializer.data, safe=False) 
+
+def minimizeResultList(results) -> list:
+    resultList = []
+    skip = 1
+    if (len(results) > 10000):
+        skip = 20
+    elif(len(results) > 5000):
+        skip = 10
+    elif(len(results) > 1000):
+        skip = 5
+    elif(len(results) > 500):
+        skip = 2
+        
+    currentSkip = 0
+    currentObj = None
+    for result in results.iterator():
+        if currentSkip % skip == 0:
+            if currentObj != None:
+                calculateAverage(currentObj, currentSkip)
+                resultList.append(currentObj)
+            currentObj = result
+            currentSkip = 0
+        else:
+            currentObj.power += result.power
+            currentObj.ws += result.ws
+            currentObj.temperature += result.temperature
+        currentSkip += 1
+    calculateAverage(currentObj, currentSkip)
+    resultList.append(currentObj)
+    return resultList
+
+def calculateAverage(result, amount) -> MystromResult:
+    result.power /= amount
+    result.ws /= amount
+    result.temperature /= amount
+    return result

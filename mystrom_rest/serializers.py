@@ -9,7 +9,8 @@ class MystromDeviceSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
         fields = ('id',
                   'name',
-                  'ip')
+                  'active',
+                  'ip',)
 
 class MystromResultSerializer(serializers.ModelSerializer):
  
