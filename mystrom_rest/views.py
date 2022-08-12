@@ -57,7 +57,6 @@ def device_detail(request, id):
 
 @api_view(['GET'])
 def device_results(request, id):
-    a = datetime.datetime.now()
     try: 
         device = MystromDevice.objects.get(id=id) 
     except MystromDevice.DoesNotExist: 
@@ -68,7 +67,6 @@ def device_results(request, id):
 
     results = MystromResult.objects.filter(device_id=device, date__range=[start_date,end_date])
 
-
     if request.method == 'GET':
         if request.GET.get('minimize', "true") != "false":
             minimizedList = minimizeResultList(results)
@@ -76,11 +74,6 @@ def device_results(request, id):
             minimizedList = results
         result_serializer = MystromResultSerializer(minimizedList, many=True) 
 
-        b = datetime.datetime.now()
-        delta = b - a
-
-        print(f'request for getting results took {int(delta.total_seconds() * 1000)}ms')
-        print(f'minimized from {len(results)} results to {len(minimizedList)}')
         return JsonResponse(result_serializer.data, safe=False) 
 
 def minimizeResultList(results) -> list:
