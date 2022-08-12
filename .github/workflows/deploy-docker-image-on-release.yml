@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'master'
-      - 'feature/minimize-results-and-log-time'
     tags:
       - 'v*'
   pull_request:
