@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 
 from mystrom_rest.models import MystromDevice, MystromResult
+from shelly3em_rest.models import Shelly3EMDevice
 from .forms import MystromDeviceForm
 
 def index(request):
@@ -18,7 +19,8 @@ def index(request):
 
 def results(request):
     return render(request, 'results.html', {
-        'devices' : MystromDevice.objects.all()
+        'devices' : MystromDevice.objects.all(),
+        'shelly_devices' : Shelly3EMDevice.objects.all()
     })
 
 def devices(request):
