@@ -18,4 +18,5 @@ from django.urls import include, path
 urlpatterns = [
     path('', include('mystrom.urls')),
     path('api/', include('mystrom_rest.urls')),
+    path('shelly-api/', include('shelly3em_rest.urls')),
 ]
