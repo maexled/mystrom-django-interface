@@ -29,22 +29,22 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="start-date-mystrom-{{ device.id }}" class="form-control">
               </div>
 
               <div class="form-group col-md-4">
                 <label for="end-date-{{ device.id }}">End date</label>
-                <input placeholder="Select date" type="date" id="end-date-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="end-date-mystrom-{{ device.id }}" class="form-control">
               </div>
               <div class="form-group col-md-2">
-                <button class="btn btn-danger" id="reset-dates-{{ device.id }}" onclick="resetDates(this)">
+                <button class="btn btn-danger" id="reset-dates-mystrom-{{ device.id }}" onclick="resetDates(this)">
                   Reset
                 </button>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="{{ device.id }}" onclick="toggleChart(this.id), 'mystrom'">
+                <button class="btn btn-info" id="mystrom-{{ device.id }}" onclick="toggleChart(this.id), 'mystrom'">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -66,22 +66,22 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="start-date-shelly-{{ device.id }}" class="form-control">
               </div>
 
               <div class="form-group col-md-4">
                 <label for="end-date-{{ device.id }}">End date</label>
-                <input placeholder="Select date" type="date" id="end-date-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="end-date-shelly-{{ device.id }}" class="form-control">
               </div>
               <div class="form-group col-md-2">
-                <button class="btn btn-danger" id="reset-dates-{{ device.id }}" onclick="resetDates(this)">
+                <button class="btn btn-danger" id="reset-dates-shelly-{{ device.id }}" onclick="resetDates(this)">
                   Reset
                 </button>
               </div>
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="{{ device.id }}" onclick="toggleChart(this.id, 'shelly')">
+                <button class="btn btn-info" id="shelly-{{ device.id }}" onclick="toggleChart(this.id, 'shelly')">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -150,7 +150,7 @@
     const startQuery = startDate == "" ? "" : "?start=" + startDate;
     const endQuery = endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate;
     console.log("Requesting REST: {% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery);
-    $.get("{% url 'rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function (data) {
+    $.get("{% url 'rest_device_index' %}" + id.split("-")[1] + "/results/" + startQuery + endQuery, function (data) {
       const chartElement = document.getElementById(elementId + "-chart");
       const informationElement = document.getElementById(elementId + "-information");
 
@@ -235,7 +235,7 @@
     const startQuery = startDate == "" ? "" : "?start=" + startDate;
     const endQuery = endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate;
     console.log("Requesting REST: {% url 'shelly_rest_device_index' %}" + id + "/results/" + startQuery + endQuery);
-    $.get("{% url 'shelly_rest_device_index' %}" + id + "/results/" + startQuery + endQuery, function (data) {
+    $.get("{% url 'shelly_rest_device_index' %}" + id.split("-")[1] + "/results/" + startQuery + endQuery, function (data) {
       const chartElement = document.getElementById(elementId + "-chart");
       const informationElement = document.getElementById(elementId + "-information");
 
