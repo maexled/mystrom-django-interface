@@ -1,0 +1,123 @@
+<script>
+  async function loadMystromChart(id, elementId, startDate, endDate) {
+    return new Promise((resolve) => {
+      const startQuery = startDate == "" ? "" : "?start=" + startDate;
+      const endQuery =
+        endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate;
+      console.log(
+        "Requesting REST: {% url 'rest_device_index' %}" +
+          id.split("-")[1] +
+          "/results/" +
+          startQuery +
+          endQuery
+      );
+      $.get(
+        "{% url 'rest_device_index' %}" +
+          id.split("-")[1] +
+          "/results/" +
+          startQuery +
+          endQuery,
+        function (data) {
+          const chartElement = document.getElementById(elementId + "-chart");
+          const informationElement = document.getElementById(
+            elementId + "-information"
+          );
+
+          if (data.length == 0) {
+            informationElement.innerHTML =
+              '<h3 class="text-danger">Query of device ' +
+              id +
+              " is empty</h3>";
+            console.log("Data is empty. Can not show any data");
+            return;
+          }
+          const firstDate = new Date(data[0].date);
+          const lastDate = new Date(data[data.length - 1].date);
+          const differenceBetweenDates = lastDate - firstDate;
+          const hoursDifferenceBetweedDates =
+            differenceBetweenDates / 1000 / 60 / 60;
+
+          const powerList = data.map((entry) => entry.power);
+          const WsList = data.map((entry) => entry.ws);
+          const temperatureList = data.map((entry) => entry.temperature);
+          let total = 0;
+          for (var power of powerList) {
+            total += power;
+          }
+          const average = total / powerList.length;
+          const totalProducedkWh =
+            (average * hoursDifferenceBetweedDates) / 1000;
+
+          informationElement.innerHTML =
+            "<h5>Average of " +
+            hoursDifferenceBetweedDates.toFixed(2) +
+            " hours: " +
+            average.toFixed(2) +
+            "Wh</h5>";
+          informationElement.innerHTML +=
+            "<h5>Leads to <b>" +
+            totalProducedkWh.toFixed(2) +
+            "kWh</b> produced in " +
+            hoursDifferenceBetweedDates.toFixed(2) +
+            " hours</h5>";
+
+          const options = {
+            series: [
+              {
+                name: "Power",
+                data: powerList,
+              },
+              {
+                name: "WS",
+                data: WsList,
+              },
+              {
+                name: "Temperature",
+                data: temperatureList,
+              },
+            ],
+            chart: {
+              height: 500,
+              type: "line",
+              zoom: {
+                enabled: true,
+              },
+            },
+            colors: ["#C80815", "#6050dc", "#39FF14"],
+            dataLabels: {
+              enabled: false,
+            },
+            stroke: {
+              width: 2,
+              curve: "straight",
+            },
+            title: {
+              text: "Power Usage",
+              align: "left",
+            },
+            grid: {
+              row: {
+                colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+                opacity: 0.5,
+              },
+            },
+            xaxis: {
+              categories: data.map((entry) =>
+                new Date(entry.date).toLocaleString()
+              ),
+              hideOverlappingLabels: true,
+              tickAmount: 5,
+            },
+            yaxis: {
+              decimalsInFloat: 2,
+            },
+          };
+
+          const chart = new ApexCharts(chartElement, options);
+          chart.render();
+          resolve();
+        }
+      );
+    });
+  }
+</script>

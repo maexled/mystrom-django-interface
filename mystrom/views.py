@@ -1,11 +1,6 @@
-import json
-
-from django.urls import reverse_lazy
-from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.contrib import messages
 
-from mystrom_rest.models import MystromDevice, MystromResult
+from mystrom_rest.models import MystromDevice
 from shelly3em_rest.models import Shelly3EMDevice
 from .forms import MystromDeviceForm
 
@@ -21,6 +16,18 @@ def results(request):
     return render(request, 'results.html', {
         'devices' : MystromDevice.objects.all(),
         'shelly_devices' : Shelly3EMDevice.objects.all()
+    })
+
+def mystrom_results(request, id):
+    device = get_object_or_404(MystromDevice, id=id)
+    return render(request, 'mystrom_result.html', {
+        'device' : device,
+    })
+
+def shelly_results(request, id):
+    device = get_object_or_404(Shelly3EMDevice, id=id)
+    return render(request, 'shelly_result.html', {
+        'device' : device,
     })
 
 def devices(request):

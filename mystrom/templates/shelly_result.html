@@ -1,0 +1,46 @@
+{% extends "base.html" %} {% block content %}
+<div id="chartContainer">
+    <div id="loading" class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+</div>
+
+{% include "shelly_chart.html" %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+<script>
+    const id = "shelly-{{device.id}}";
+    const elementId = "chart-" + id;
+
+    const createdElement = document.createElement("div");
+    createdElement.setAttribute("id", elementId);
+    document.getElementById("chartContainer").appendChild(createdElement);
+
+    const informationElement = document.createElement("div");
+    informationElement.setAttribute("id", elementId + "-information");
+    createdElement.appendChild(informationElement);
+
+    const chartElement = document.createElement("div");
+    chartElement.setAttribute("id", elementId + "-chart");
+    createdElement.appendChild(chartElement);
+
+
+    function dateFormat(date) {
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+
+        return `${year}-${month}-${day}`;
+    }
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    setTimeout(async () => {
+        await loadShellyChart(id, elementId, dateFormat(today), dateFormat(tomorrow));
+
+        const loadingElement = document.getElementById("loading");
+        loadingElement.outerHTML = "";
+    });
+
+</script>
+{% endblock %}
