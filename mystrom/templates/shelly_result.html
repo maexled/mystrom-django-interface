@@ -14,6 +14,12 @@
 {% include "shelly_chart.html" %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
 <script>
+  let params = new URLSearchParams(window.location.search);
+  const last = params.get("last");
+
+  console.log("Current format date: " + new Date());
+  console.log(last);
+
   const id = "shelly-{{device.id}}";
   const elementId = "chart-" + id;
 
@@ -30,26 +36,35 @@
   createdElement.appendChild(chartElement);
 
   function dateFormat(date) {
+    const second = date.getSeconds();
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   }
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const now = new Date();
+  const start = new Date(now);
+  if (!last) {
+    start.setHours(0);
+    start.setMinutes(0);
+    start.setSeconds(0);
+  } else {
+    start.setMinutes(start.getMinutes() - last);
+  }
 
   setTimeout(async () => {
     await loadShellyChart(
       id,
       elementId,
-      dateFormat(today),
-      dateFormat(tomorrow)
+      dateFormat(start),
+      dateFormat(now)
     );
-
     const loadingElement = document.getElementById("loading");
-    loadingElement.outerHTML = "";
+    loadingElement.remove();
   });
 </script>
 {% endblock %}
