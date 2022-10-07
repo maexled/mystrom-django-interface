@@ -42,7 +42,7 @@
           const emeter1List = data.map((entry) => entry.emeters[1].power);
           const emeter2List = data.map((entry) => entry.emeters[2].power);
           let total = 0;
-          for (var power of powerList) {
+          for (let power of powerList) {
             total += power;
           }
           const average = total / powerList.length;

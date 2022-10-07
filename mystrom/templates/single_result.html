@@ -24,7 +24,7 @@
   {% include "mystrom_chart.html" %}
 {% endif %}
 <script>
-  let params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const last = params.get("last");
 
   {% if modelclass == 'Shelly3EMDevice' %}

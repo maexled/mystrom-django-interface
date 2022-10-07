@@ -30,7 +30,7 @@
 </form>
 {% endwith %}
 <script>
-  const submit_button = document.getElementById("modal-submit");
+  var submit_button = document.getElementById("modal-submit");
 	function onSubmit() {
     submit_button.innerHTML = "Saving....";
     submit_button.disabled = true;
@@ -39,7 +39,7 @@
 </script>
 {% if device %}
 <script>
-  const delete_button = document.getElementById("modal-delete");
+  var delete_button = document.getElementById("modal-delete");
 	function onDelete() {
     delete_button.innerHTML = "Removing....";
     delete_button.disabled = true;

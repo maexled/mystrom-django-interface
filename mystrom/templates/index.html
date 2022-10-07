@@ -75,7 +75,7 @@
           if (e.detail.xhr.response.includes("invalid-feedback")) {
             e.detail.shouldSwap = false;
             const response = e.detail.xhr.response;
-            document.getElementById("modal-body").innerHTML = response;
+            console.log(document.getElementById("dialog"));
 
             // reset save buton from "Saving..." to "Save"
             const submit_button = document.getElementById("modal-submit");
@@ -87,8 +87,7 @@
     })
 
     // Remove dialog content after hiding
-    htmx.on("hidden.bs.createModal", () => {
-      console.log("HIDDEN");
+    $("#createModal").on("hidden.bs.modal", () => {
       document.getElementById("dialog").innerHTML = "";
     })
   })()

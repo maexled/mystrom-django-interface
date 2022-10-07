@@ -41,7 +41,7 @@
           const WsList = data.map((entry) => entry.ws);
           const temperatureList = data.map((entry) => entry.temperature);
           let total = 0;
-          for (var power of powerList) {
+          for (let power of powerList) {
             total += power;
           }
           const average = total / powerList.length;
