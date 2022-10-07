@@ -38,6 +38,7 @@
     hx-delete="{% url 'mystrom_devices' %}"
     hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
     hx-target="#mystrom-devices-list"
+    disabled
   >
     Delete Devices
   </button>
@@ -78,6 +79,7 @@
     hx-delete="{% url 'shelly_devices' %}"
     hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
     hx-target="#shelly-devices-list"
+    disabled
   >
     Delete Devices
   </button>
