@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load classname %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 {% if device %}
 <form onsubmit="onSubmit()" hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">

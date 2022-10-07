@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'widget_tweaks',
-    'mystrom',
+    'interface',
     'mystrom_rest',
     'shelly3em_rest'
 ]
