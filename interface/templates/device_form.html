@@ -1,17 +1,23 @@
 {% load widget_tweaks %}
 {% load classname %}
+{% with device|classname as modelclass %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
-{% if device %}
-<form onsubmit="onSubmit()" hx-post="{% url 'device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
-{% else %}
-<form onsubmit="onSubmit()" hx-post="{% url 'devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#devices-list" class="modal-content">
+
+{% if device and modelclass == 'Shelly3EMDevice' %}
+<form onsubmit="onSubmit()" hx-post="{% url 'shelly_device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#shelly-devices-list" class="modal-content">
+{% elif device and modelclass == "MystromDevice" %}
+<form onsubmit="onSubmit()" hx-post="{% url 'mystrom_device' id=device.id %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#mystrom-devices-list" class="modal-content">
+{% elif not device and device_type == 'Shelly3EMDevice' %}
+<form onsubmit="onSubmit()" hx-post="{% url 'shelly_devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#shelly-devices-list" class="modal-content">
+{% elif not device and device_type == "MystromDevice" %}
+<form onsubmit="onSubmit()" hx-post="{% url 'mystrom_devices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' hx-target="#mystrom-devices-list" class="modal-content">
 {% endif %}
   {% csrf_token %}
   <div class="modal-header">
     {% if device %}
     <h5 class="modal-title" id="exampleModalLabel">Edit device</h5>
     {% else %}
-    <h5 class="modal-title" id="exampleModalLabel">Create device</h5>
+    <h5 class="modal-title" id="exampleModalLabel">Create {{ device_type }}</h5>
     {% endif %}
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">&times;</span>
@@ -22,13 +28,18 @@
   </div>
   <div class="modal-footer">
     {% if device %}
-    <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'device' id=device.id %}">Remove</button>
+      {% if modelclass == 'Shelly3EMDevice' %}
+      <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'shelly_device' id=device.id %}">Remove</button>
+      {% elif modelclass == "MystromDevice" %}
+      <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger" hx-delete="{% url 'mystrom_device' id=device.id %}">Remove</button>
+      {% endif %}
     <span class="flex-grow-1"></span>
     {% endif %}
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     <button id="modal-submit" type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>
+{% endwith %}
 {% endwith %}
 <script>
   var submit_button = document.getElementById("modal-submit");

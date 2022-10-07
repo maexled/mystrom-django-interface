@@ -1,4 +1,6 @@
+{% load classname %}
 {% for device in devices %}
+{% with device|classname as modelclass %}
 <tr id="device-{{ device.id }}" class="device-row">
   <td>{{ device.id }}</td>
   <td>{{ device.name }}</td>
@@ -9,10 +11,15 @@
   <td class="text-danger">Not Active</td>
   {% endif %}
   <td>
-    <button class="btn btn-primary btn-sm" hx-get="{% url 'device' id=device.id %}" hx-target="#dialog">
+    {% if modelclass == 'Shelly3EMDevice' %}
+    <button class="btn btn-primary btn-sm" hx-get="{% url 'shelly_device' id=device.id %}" hx-target="#dialog">
+    {% elif modelclass == "MystromDevice" %}
+    <button class="btn btn-primary btn-sm" hx-get="{% url 'mystrom_device' id=device.id %}" hx-target="#dialog">
+    {% endif %}
       Edit Device
     </button>
 
   </td>
 </tr>
+{% endwith %}
 {% endfor %}
