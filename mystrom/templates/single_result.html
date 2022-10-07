@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% block content %} {% load classname %}
 <div id="chartContainer">
   <div id="loading" class="d-flex justify-content-center">
     <div
@@ -10,17 +10,25 @@
     </div>
   </div>
 </div>
-
-{% include "shelly_chart.html" %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+{% with device|classname as modelclass %}
+
+{% if modelclass == 'Shelly3EMDevice' %}
+  {% include "shelly_chart.html" %}
+{% elif modelclass == "MystromDevice" %}
+  {% include "mystrom_chart.html" %}
+{% endif %}
 <script>
   let params = new URLSearchParams(window.location.search);
   const last = params.get("last");
 
-  console.log("Current format date: " + new Date());
-  console.log(last);
+  {% if modelclass == 'Shelly3EMDevice' %}
+  const deviceType = "shelly";
+  {% elif modelclass == "MystromDevice" %}
+  const deviceType = "mystrom";
+  {% endif %}
 
-  const id = "shelly-{{device.id}}";
+  const id = deviceType + "-{{device.id}}";
   const elementId = "chart-" + id;
 
   const createdElement = document.createElement("div");
@@ -57,14 +65,23 @@
   }
 
   setTimeout(async () => {
+    {% if modelclass == 'Shelly3EMDevice' %}
     await loadShellyChart(
       id,
       elementId,
       dateFormat(start),
       dateFormat(now)
     );
+    {% elif modelclass == "MystromDevice" %}
+    await loadMystromChart(
+      id,
+      elementId,
+      dateFormat(start),
+      dateFormat(now)
+    );
+    {% endif %}
     const loadingElement = document.getElementById("loading");
     loadingElement.remove();
   });
 </script>
-{% endblock %}
+{% endwith %} {% endblock %}

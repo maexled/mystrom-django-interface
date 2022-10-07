@@ -20,13 +20,13 @@ def results(request):
 
 def mystrom_results(request, id):
     device = get_object_or_404(MystromDevice, id=id)
-    return render(request, 'mystrom_result.html', {
+    return render(request, 'single_result.html', {
         'device' : device,
     })
 
 def shelly_results(request, id):
     device = get_object_or_404(Shelly3EMDevice, id=id)
-    return render(request, 'shelly_result.html', {
+    return render(request, 'single_result.html', {
         'device' : device,
     })
 
