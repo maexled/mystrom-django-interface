@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block content %} {% load classname %}
+{% extends "base.html" %}
+{% load classname %}
+{% block content %}
 <div id="chartContainer">
   <div id="loading" class="d-flex justify-content-center">
     <div
@@ -10,6 +12,9 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
 {% with device|classname as modelclass %}
 
@@ -84,4 +89,5 @@
     loadingElement.remove();
   });
 </script>
-{% endwith %} {% endblock %}
+{% endwith %} 
+{% endblock %}
