@@ -29,6 +29,7 @@
               id +
               " is empty</h3>";
             console.log("Data is empty. Can not show any data");
+            resolve();
             return;
           }
           const firstDate = new Date(data[0].date);
