@@ -120,7 +120,7 @@
     const endDateElement = document.getElementById("end-date-" + id);
     const elementId = "chart-" + id;
     if (shown.includes(id)) {
-      document.getElementById(elementId).outerHTML = "";
+      document.getElementById(elementId).remove();
 
       document.getElementById(id).innerHTML = "Show Chart for Device " + id;
       shown = shown.filter(shownId => shownId != id);
@@ -131,17 +131,27 @@
 
       const informationElement = document.createElement("div");
       informationElement.setAttribute("id", elementId + "-information");
+      informationElement.innerHTML = "<h3>Loading Chart for " + id + "</h3>";
       createdElement.appendChild(informationElement);
 
       const chartElement = document.createElement("div");
       chartElement.setAttribute("id", elementId + "-chart");
       createdElement.appendChild(chartElement);
 
-      if (device_type == "shelly") {
-        loadShellyChart(id, elementId, startDateElement.value, endDateElement.value);
-      } else {
-        loadMystromChart(id, elementId, startDateElement.value, endDateElement.value);
-      }
+      const loadingAnimation = document.createElement("div");
+      loadingAnimation.className = "spinner-border";
+      loadingAnimation.style = "width: 4rem; height: 4rem;";
+      loadingAnimation.role = "status";
+      chartElement.appendChild(loadingAnimation);
+
+      setTimeout(async () => {
+        if (device_type == "shelly") {
+          await loadShellyChart(id, elementId, startDateElement.value, endDateElement.value);
+        } else {
+          await loadMystromChart(id, elementId, startDateElement.value, endDateElement.value);
+        }
+        chartElement.removeChild(loadingAnimation);
+      })
 
       document.getElementById(id).innerHTML = "Hide Chart for Device " + id;
       shown.push(id);
