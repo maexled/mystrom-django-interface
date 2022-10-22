@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 
 from mystrom_rest.models import MystromDevice
 from shelly3em_rest.models import Shelly3EMDevice
+from maxcube_rest.models import MaxCubeDevice
 from .forms import MystromDeviceForm, Shelly3EMDeviceForm
 
 def index(request):
@@ -27,6 +28,12 @@ def mystrom_results(request, id):
 
 def shelly_results(request, id):
     device = get_object_or_404(Shelly3EMDevice, id=id)
+    return render(request, 'single_result.html', {
+        'device' : device,
+    })
+
+def maxcube_results(request, id):
+    device = get_object_or_404(MaxCubeDevice, id=id)
     return render(request, 'single_result.html', {
         'device' : device,
     })

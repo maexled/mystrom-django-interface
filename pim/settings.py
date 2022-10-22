@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'interface',
     'mystrom_rest',
-    'shelly3em_rest'
+    'shelly3em_rest',
+    'maxcube_rest'
 ]
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {

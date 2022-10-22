@@ -1,0 +1,98 @@
+<script>
+  async function loadMaxcubeChart(id, elementId, startDate, endDate) {
+    return new Promise((resolve) => {
+      const startQuery = startDate == "" ? "" : "?start=" + startDate;
+      const endQuery =
+        endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate;
+      console.log(
+        "Requesting REST: {% url 'maxcube_rest_device_index' %}" +
+          id.split("-")[1] +
+          "/results/" +
+          startQuery +
+          endQuery
+      );
+      $.get(
+        "{% url 'maxcube_rest_device_index' %}" +
+          id.split("-")[1] +
+          "/results/" +
+          startQuery +
+          endQuery,
+        function (data) {
+          const chartElement = document.getElementById(elementId + "-chart");
+          const informationElement = document.getElementById(
+            elementId + "-information"
+          );
+
+          if (data.length == 0) {
+            informationElement.innerHTML =
+              '<h3 class="text-danger">Query of device ' +
+              id +
+              " is empty</h3>";
+            console.log("Data is empty. Can not show any data");
+            resolve();
+            return;
+          }
+          const firstDate = new Date(data[0].date);
+          const lastDate = new Date(data[data.length - 1].date);
+          const differenceBetweenDates = lastDate - firstDate;
+          const hoursDifferenceBetweedDates =
+            differenceBetweenDates / 1000 / 60 / 60;
+
+          const serials = [...new Set(data.map((entry) => entry.serial))];
+
+          const list = [];
+          for (let serial of serials) {
+            const deviceName = data.find((entry) => entry.serial == serial)?.name;
+            const temperatureList = data.filter((entry) => entry.serial == serial).map((entry) => entry.actual_temperature);
+            const name = "Temperature - " + deviceName;
+            list.push({name: name, data: temperatureList}) 
+          }
+
+          informationElement.innerHTML = "";
+
+          const options = {
+            series: list,
+            chart: {
+              height: 500,
+              type: "line",
+              zoom: {
+                enabled: true,
+              },
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            stroke: {
+              width: 2,
+              curve: "straight",
+            },
+            title: {
+              text: "Temperature",
+              align: "left",
+            },
+            grid: {
+              row: {
+                colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+                opacity: 0.5,
+              },
+            },
+            xaxis: {
+              categories: data.filter((entry) => entry.serial == serials[0]).map((entry) =>
+                new Date(entry.date).toLocaleString()
+              ),
+              hideOverlappingLabels: true,
+              tickAmount: 5,
+            },
+            yaxis: {
+              decimalsInFloat: 2,
+            },
+          };
+
+          const chart = new ApexCharts(chartElement, options);
+          chart.render();
+          resolve();
+        }
+      );
+    });
+  }
+</script>

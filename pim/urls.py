@@ -19,4 +19,5 @@ urlpatterns = [
     path('', include('interface.urls')),
     path('api/', include('mystrom_rest.urls')),
     path('shelly-api/', include('shelly3em_rest.urls')),
+    path('maxcube-api/', include('maxcube_rest.urls')),
 ]

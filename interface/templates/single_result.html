@@ -22,6 +22,8 @@
   {% include "shelly_chart.html" %}
 {% elif modelclass == "MystromDevice" %}
   {% include "mystrom_chart.html" %}
+{% elif modelclass == "MaxCubeDevice" %}
+  {% include "maxcube_chart.html" %}
 {% endif %}
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -31,6 +33,8 @@
   const deviceType = "shelly";
   {% elif modelclass == "MystromDevice" %}
   const deviceType = "mystrom";
+  {% elif modelclass == "MaxCubeDevice" %}
+  const deviceType = "maxcube";
   {% endif %}
 
   const id = deviceType + "-{{device.id}}";
@@ -79,6 +83,13 @@
     );
     {% elif modelclass == "MystromDevice" %}
     await loadMystromChart(
+      id,
+      elementId,
+      dateFormat(start),
+      dateFormat(now)
+    );
+    {% elif modelclass == "MaxCubeDevice" %}
+    await loadMaxcubeChart(
       id,
       elementId,
       dateFormat(start),
