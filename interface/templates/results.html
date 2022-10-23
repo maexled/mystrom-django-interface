@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <div class="px-5 my-5 text-center">
+    <h1>Device Results</h1>
+    <p></p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>IP</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="devices-list">
+      {% for device in devices %}
+      <tr id="device-{{ device.id }}" class="device-row">
+        <td>{{ device.id }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.ip }}</td>
+        <td>
+
+          <div class="form-row">
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="start-date-{{ device.id }}">Start date</label>
+                <input placeholder="Select date" type="date" id="start-date-mystrom-{{ device.id }}" class="form-control">
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="end-date-{{ device.id }}">End date</label>
+                <input placeholder="Select date" type="date" id="end-date-mystrom-{{ device.id }}" class="form-control">
+              </div>
+              <div class="form-group col-md-2">
+                <button class="btn btn-danger" id="reset-dates-mystrom-{{ device.id }}" onclick="resetDates(this)">
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-9">
+                <button class="btn btn-info" id="mystrom-{{ device.id }}" onclick="toggleChart(this.id), 'mystrom'">
+                  Show Chart for Device {{ device.id }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+        </td>
+      </tr>
+      {% endfor %}
+      {% for device in shelly_devices %}
+      <tr id="device-{{ device.id }}" class="device-row">
+        <td>{{ device.id }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.ip }}</td>
+        <td>
+
+          <div class="form-row">
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="start-date-{{ device.id }}">Start date</label>
+                <input placeholder="Select date" type="date" id="start-date-shelly-{{ device.id }}" class="form-control">
+              </div>
+
+              <div class="form-group col-md-4">
+                <label for="end-date-{{ device.id }}">End date</label>
+                <input placeholder="Select date" type="date" id="end-date-shelly-{{ device.id }}" class="form-control">
+              </div>
+              <div class="form-group col-md-2">
+                <button class="btn btn-danger" id="reset-dates-shelly-{{ device.id }}" onclick="resetDates(this)">
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-9">
+                <button class="btn btn-info" id="shelly-{{ device.id }}" onclick="toggleChart(this.id, 'shelly')">
+                  Show Chart for Device {{ device.id }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div id="chartContainer">
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+
+{% include "mystrom_chart.html" %}
+{% include "shelly_chart.html" %}
+
+<script type="application/javascript">
+  let shown = [];
+
+  function resetDates(el) {
+    const id = String(el.id).split("-")[2] + "-" + String(el.id).split("-")[3];
+    document.getElementById("start-date-" + id).value = "";
+    document.getElementById("end-date-" + id).value = "";
+  }
+
+  function dateFormat(date) {
+    const second = date.getSeconds();
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return `${year}-${month}-${day}`;
+  }
+
+  function toggleChart(id, device_type) {
+    const startDateElement = document.getElementById("start-date-" + id);
+    const endDateElement = document.getElementById("end-date-" + id);
+    const elementId = "chart-" + id;
+    if (shown.includes(id)) {
+      document.getElementById(elementId).remove();
+
+      document.getElementById(id).innerHTML = "Show Chart for Device " + id;
+      shown = shown.filter(shownId => shownId != id);
+    } else {
+      const createdElement = document.createElement("div");
+      createdElement.setAttribute("id", elementId);
+      document.getElementById("chartContainer").appendChild(createdElement);
+
+      const informationElement = document.createElement("div");
+      informationElement.setAttribute("id", elementId + "-information");
+      informationElement.innerHTML = "<h3>Loading Chart for " + id + "</h3>";
+      createdElement.appendChild(informationElement);
+
+      const chartElement = document.createElement("div");
+      chartElement.setAttribute("id", elementId + "-chart");
+      createdElement.appendChild(chartElement);
+
+      const loadingAnimation = document.createElement("div");
+      loadingAnimation.className = "spinner-border";
+      loadingAnimation.style = "width: 4rem; height: 4rem;";
+      loadingAnimation.role = "status";
+      chartElement.appendChild(loadingAnimation);
+
+      let startDate = startDateElement.value;
+      let endDate = endDateElement.value;
+      if (!startDate) {
+        startDate = new Date();
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate = dateFormat(startDate);
+        startDateElement.value = startDate;
+      }
+      if (!endDate) {
+        endDate = new Date();
+        endDate.setHours(0);
+        endDate.setMinutes(0);
+        endDate.setSeconds(0);
+        endDate.setDate(endDate.getDate() + 1);
+        endDate = dateFormat(endDate);
+        endDateElement.value = endDate;
+      }
+
+      setTimeout(async () => {
+        if (device_type == "shelly") {
+          await loadShellyChart(id, elementId, startDate, endDate);
+        } else {
+          await loadMystromChart(id, elementId, startDate, endDate);
+        }
+        chartElement.removeChild(loadingAnimation);
+      })
+
+      document.getElementById(id).innerHTML = "Hide Chart for Device " + id;
+      shown.push(id);
+    }
+
+  }
+
+</script>
+{% endblock %}

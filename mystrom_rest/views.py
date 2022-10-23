@@ -78,6 +78,8 @@ def device_results(request, id):
 
 def minimizeResultList(results) -> list:
     resultList = []
+    if len(results) == 0:
+        return resultList
     skip = 1
     if (len(results) > 10000):
         skip = 20

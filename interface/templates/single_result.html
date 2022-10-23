@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load classname %}
+{% block content %}
+<div id="chartContainer">
+  <div id="loading" class="d-flex justify-content-center">
+    <div
+      class="spinner-border"
+      style="width: 6rem; height: 6rem; margin-top: 100px"
+      role="status"
+    >
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+{% with device|classname as modelclass %}
+
+{% if modelclass == 'Shelly3EMDevice' %}
+  {% include "shelly_chart.html" %}
+{% elif modelclass == "MystromDevice" %}
+  {% include "mystrom_chart.html" %}
+{% endif %}
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const last = params.get("last");
+
+  {% if modelclass == 'Shelly3EMDevice' %}
+  const deviceType = "shelly";
+  {% elif modelclass == "MystromDevice" %}
+  const deviceType = "mystrom";
+  {% endif %}
+
+  const id = deviceType + "-{{device.id}}";
+  const elementId = "chart-" + id;
+
+  const createdElement = document.createElement("div");
+  createdElement.setAttribute("id", elementId);
+  document.getElementById("chartContainer").appendChild(createdElement);
+
+  const informationElement = document.createElement("div");
+  informationElement.setAttribute("id", elementId + "-information");
+  createdElement.appendChild(informationElement);
+
+  const chartElement = document.createElement("div");
+  chartElement.setAttribute("id", elementId + "-chart");
+  createdElement.appendChild(chartElement);
+
+  function dateFormat(date) {
+    const second = date.getSeconds();
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+  }
+  const now = new Date();
+  const start = new Date(now);
+  if (!last) {
+    start.setHours(0);
+    start.setMinutes(0);
+    start.setSeconds(0);
+  } else {
+    start.setMinutes(start.getMinutes() - last);
+  }
+
+  setTimeout(async () => {
+    {% if modelclass == 'Shelly3EMDevice' %}
+    await loadShellyChart(
+      id,
+      elementId,
+      dateFormat(start),
+      dateFormat(now)
+    );
+    {% elif modelclass == "MystromDevice" %}
+    await loadMystromChart(
+      id,
+      elementId,
+      dateFormat(start),
+      dateFormat(now)
+    );
+    {% endif %}
+    const loadingElement = document.getElementById("loading");
+    loadingElement.remove();
+  });
+</script>
+{% endwith %} 
+{% endblock %}

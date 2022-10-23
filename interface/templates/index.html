@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container">
+  <div class="px-5 my-5 text-center">
+    <h1>MyStrom Devices</h1>
+    <p></p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>IP</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="mystrom-devices-list">
+      {% include "device_table_entries.html" with devices=devices %}
+    </tbody>
+  </table>
+
+  <!-- Button trigger modal -->
+  <button
+    hx-get="{% url 'mystrom_devices' %}"
+    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+    hx-target="#dialog"
+    class="btn btn-primary"
+  >
+    Add Device
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-danger"
+    hx-delete="{% url 'mystrom_devices' %}"
+    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+    hx-target="#mystrom-devices-list"
+    disabled
+  >
+    Delete Devices
+  </button>
+
+  <div class="px-5 my-5 text-center">
+    <h1>Shelly Devices</h1>
+    <p></p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>IP</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="shelly-devices-list">
+      {% include "device_table_entries.html" with devices=shelly_devices %}
+    </tbody>
+  </table>
+
+  <!-- Button trigger modal -->
+  <button
+    hx-get="{% url 'shelly_devices' %}"
+    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+    hx-target="#dialog"
+    class="btn btn-primary"
+  >
+    Add Device
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-danger"
+    hx-delete="{% url 'shelly_devices' %}"
+    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+    hx-target="#shelly-devices-list"
+    disabled
+  >
+    Delete Devices
+  </button>
+</div>
+
+<!-- Placeholder for the modal -->
+<div
+  id="createModal"
+  class="modal fade"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div id="dialog" class="modal-dialog" role="document"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="application/javascript">
+  (function () {
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target.id == "dialog") {
+        $("#createModal").modal("show");
+      } else if (
+        e.detail.requestConfig.path == "{% url 'mystrom_devices' %}" ||
+        e.detail.requestConfig.path == "{% url 'shelly_devices' %}"
+      ) {
+        if (e.detail.requestConfig.verb == "post") {
+          const deviceName = e.detail.requestConfig.parameters.name;
+          $("#createModal").modal("hide");
+          toastr.success("Device " + deviceName + " created");
+        } else if (e.detail.requestConfig.verb == "delete") {
+          toastr.error("All devices deleted");
+        }
+      } else if (
+        e.detail.requestConfig.path.startsWith("{% url 'mystrom_devices' %}") ||
+        e.detail.requestConfig.path.startsWith("{% url 'shelly_devices' %}")
+      ) {
+        const deviceName = e.detail.requestConfig.parameters.name;
+        $("#createModal").modal("hide");
+        if (e.detail.requestConfig.verb == "post") {
+          toastr.success("Device " + deviceName + " updated");
+        } else if (e.detail.requestConfig.verb == "delete") {
+          toastr.error("Device " + deviceName + " deleted");
+        }
+      }
+    });
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (
+        e.detail.requestConfig.path == "{% url 'mystrom_devices' %}" ||
+        e.detail.requestConfig.path.startsWith("{% url 'mystrom_devices' %}") ||
+        e.detail.requestConfig.path == "{% url 'shelly_devices' %}" ||
+        e.detail.requestConfig.path.startsWith("{% url 'shelly_devices' %}")
+      ) {
+        if (e.detail.requestConfig.verb == "post") {
+          // when it contains invalid feedback, we do no want to swap and show error in form
+          if (e.detail.xhr.response.includes("invalid-feedback")) {
+            e.detail.shouldSwap = false;
+            const response = e.detail.xhr.response;
+            document.getElementById("modal-body").innerHTML = response;
+
+            // reset save buton from "Saving..." to "Save"
+            const submit_button = document.getElementById("modal-submit");
+            submit_button.innerHTML = "Save";
+            submit_button.disabled = false;
+          }
+        }
+      }
+    });
+
+    // Remove dialog content after hiding
+    $("#createModal").on("hidden.bs.modal", () => {
+      document.getElementById("dialog").innerHTML = "";
+    });
+  })();
+</script>
+{% endblock %}

@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'widget_tweaks',
-    'mystrom',
-    'mystrom_rest'
+    'interface',
+    'mystrom_rest',
+    'shelly3em_rest'
 ]
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
