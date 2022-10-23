@@ -110,9 +110,21 @@
   let shown = [];
 
   function resetDates(el) {
-    const id = String(el.id).split("-")[2];
+    const id = String(el.id).split("-")[2] + "-" + String(el.id).split("-")[3];
     document.getElementById("start-date-" + id).value = "";
     document.getElementById("end-date-" + id).value = "";
+  }
+
+  function dateFormat(date) {
+    const second = date.getSeconds();
+    const minute = date.getMinutes();
+    const hour = date.getHours();
+
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return `${year}-${month}-${day}`;
   }
 
   function toggleChart(id, device_type) {
@@ -144,11 +156,31 @@
       loadingAnimation.role = "status";
       chartElement.appendChild(loadingAnimation);
 
+      let startDate = startDateElement.value;
+      let endDate = endDateElement.value;
+      if (!startDate) {
+        startDate = new Date();
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate = dateFormat(startDate);
+        startDateElement.value = startDate;
+      }
+      if (!endDate) {
+        endDate = new Date();
+        endDate.setHours(0);
+        endDate.setMinutes(0);
+        endDate.setSeconds(0);
+        endDate.setDate(endDate.getDate() + 1);
+        endDate = dateFormat(endDate);
+        endDateElement.value = endDate;
+      }
+
       setTimeout(async () => {
         if (device_type == "shelly") {
-          await loadShellyChart(id, elementId, startDateElement.value, endDateElement.value);
+          await loadShellyChart(id, elementId, startDate, endDate);
         } else {
-          await loadMystromChart(id, elementId, startDateElement.value, endDateElement.value);
+          await loadMystromChart(id, elementId, startDate, endDate);
         }
         chartElement.removeChild(loadingAnimation);
       })
