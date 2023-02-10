@@ -66,8 +66,8 @@ def device_results(request, id):
     end_date=request.GET.get('end', datetime.datetime.now())
 
     results = Shelly3EMResult.objects.filter(device_id=device, date__range=[start_date,end_date])
+    results = results.prefetch_related('emeters')
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True) 
-
         return JsonResponse(result_serializer.data, safe=False) 

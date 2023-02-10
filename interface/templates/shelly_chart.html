@@ -39,9 +39,27 @@
             differenceBetweenDates / 1000 / 60 / 60;
 
           const powerList = data.map((entry) => entry.total_power);
-          const emeter0List = data.map((entry) => entry.emeters[0].power);
-          const emeter1List = data.map((entry) => entry.emeters[1].power);
-          const emeter2List = data.map((entry) => entry.emeters[2].power);
+          let emeter0List, emeter1List, emeter2List = [];
+          let emeterSeries = [];
+          if (data[0].emeters) {
+            emeter0List = data.map((entry) => entry.emeters[0].power);
+            emeter1List = data.map((entry) => entry.emeters[1].power);
+            emeter2List = data.map((entry) => entry.emeters[2].power);
+            emeterSeries = [
+              {
+                name: "Phase A",
+                data: emeter0List,
+              },
+              {
+                name: "Phase B",
+                data: emeter1List,
+              },
+              {
+                name: "Phase C",
+                data: emeter2List,
+              },
+            ];
+          }
           let total = 0;
           for (let power of powerList) {
             total += power;
@@ -68,19 +86,7 @@
               {
                 name: "Power",
                 data: powerList,
-              },
-              {
-                name: "Phase A",
-                data: emeter0List,
-              },
-              {
-                name: "Phase B",
-                data: emeter1List,
-              },
-              {
-                name: "Phase C",
-                data: emeter2List,
-              },
+              }
             ],
             chart: {
               height: 500,
@@ -88,6 +94,9 @@
               zoom: {
                 enabled: true,
               },
+              animations: {
+                enabled: false
+              }
             },
             colors: ["#C80815", "#6050dc", "#39FF14", "#dfa801"],
             dataLabels: {
@@ -118,7 +127,22 @@
               decimalsInFloat: 2,
             },
           };
-
+          options.series.push(...emeterSeries);
+          // reducde series data when too much data is available
+          if (data.length > 1000) {
+            options.series = options.series.map((series) => {
+              const newData = [];
+              for (let i = 0; i < series.data.length; i++) {
+                if (i % 5 == 0) {
+                  newData.push(series.data[i]);
+                }
+              }
+              return {
+                name: series.name,
+                data: newData,
+              };
+            });
+          }
           const chart = new ApexCharts(chartElement, options);
           chart.render();
           resolve();
