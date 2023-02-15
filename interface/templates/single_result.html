@@ -17,6 +17,7 @@
 
 {% block scripts %}
 <script src="{% static 'js/apexcharts.min.js' %}"></script>
+<script src="{% static 'js/uPlot.iife.min.js' %}"></script>
 {% with device|classname as modelclass %}
 
 {% if modelclass == 'Shelly3EMDevice' %}
