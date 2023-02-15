@@ -1,0 +1,57 @@
+version: "3.7"
+
+services:
+  interface:
+    container_name: interface
+    image: ghcr.io/maexled/mystrom-django-interface:master
+#   build: .
+    privileged: true
+    restart: always
+    expose:
+      - "8000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CORS_ORIGIN_ALLOW_ALL=${CORS_ORIGIN_ALLOW_ALL}
+      - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
+      - TZ=${TZ}
+
+
+  mystrom-data-collector:
+    container_name: mystrom-data-collector
+    image: ghcr.io/maexled/mystrom-python:master
+    restart: always
+    depends_on:
+      - interface
+    privileged: true
+    environment:
+      - SQL_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - TZ=${TZ}
+
+  shelly-data-collector:
+    container_name: shelly-data-collector
+    image: ghcr.io/maexled/shelly-status-saver:master
+    restart: always
+    depends_on:
+      - interface
+    privileged: true
+    environment:
+      - SQL_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - TZ=${TZ}
+
+  interface-reverse-proxy:
+    container_name: interface-reverse-proxy
+    image: nginx
+    depends_on:
+      - interface
+    restart: always
+    volumes:
+      - ./.nginx/compose/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./static:/var/www/static
+    ports:
+      - "80:80"

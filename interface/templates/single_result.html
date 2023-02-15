@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load classname %}
+{% load static %}
 {% block content %}
 <div id="chartContainer">
   <div id="loading" class="d-flex justify-content-center">
@@ -15,7 +16,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.35.3/apexcharts.min.js"></script>
+<script src="{% static 'js/apexcharts.min.js' %}"></script>
 {% with device|classname as modelclass %}
 
 {% if modelclass == 'Shelly3EMDevice' %}

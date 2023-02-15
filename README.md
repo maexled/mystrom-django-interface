@@ -45,6 +45,12 @@ docker run \
    -e TZ=Europe/Berlin \
    ghcr.io/maexled/mystrom-django-interface
 ```
+Make sure that the static files are not deployed yet. For this look the next section
+
+## Run with docker-compose and needed containers
+```sh
+DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com TZ=Europe/Berlin docker compose up
+```
 
 ## Configurations
 ### Important things to know

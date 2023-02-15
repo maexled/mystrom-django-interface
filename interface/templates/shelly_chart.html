@@ -130,10 +130,11 @@
           options.series.push(...emeterSeries);
           // reducde series data when too much data is available
           if (data.length > 1000) {
+            const modolu = 5;
             options.series = options.series.map((series) => {
               const newData = [];
               for (let i = 0; i < series.data.length; i++) {
-                if (i % 5 == 0) {
+                if (i % modolu == 0) {
                   newData.push(series.data[i]);
                 }
               }
@@ -142,6 +143,11 @@
                 data: newData,
               };
             });
+            options.xaxis.categories = options.xaxis.categories.filter(
+              (category, index) => {
+                return index % modolu == 0;
+              }
+            );
           }
           const chart = new ApexCharts(chartElement, options);
           chart.render();
