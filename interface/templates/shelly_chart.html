@@ -42,9 +42,9 @@
           let emeter0List, emeter1List, emeter2List = [];
           let emeterSeries = [];
           if (data[0].emeters) {
-            emeter0List = data.map((entry) => entry.emeters[0].power);
-            emeter1List = data.map((entry) => entry.emeters[1].power);
-            emeter2List = data.map((entry) => entry.emeters[2].power);
+            emeter0List = data.map((entry) => entry.emeters[0] ? entry.emeters[0].power : 0);
+            emeter1List = data.map((entry) => entry.emeters[1] ? entry.emeters[1].power : 0);
+            emeter2List = data.map((entry) => entry.emeters[2] ? entry.emeters[2].power : 0);
             emeterSeries = [
               {
                 name: "Phase A",

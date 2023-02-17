@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements.txt ./
 
 
-RUN apk add gcc musl-dev mariadb-connector-c-dev
+RUN apk add gcc musl-dev mariadb-connector-c-dev libpq-dev
 
 
 RUN pip install --no-cache-dir --upgrade pip && \
