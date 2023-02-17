@@ -43,7 +43,7 @@ docker run \
    -e ALLOWED_HOSTS=localhost,mysite.com \
    -e CORS_ORIGIN_ALLOW_ALL=False \
    -e CORS_ORIGIN_WHITELIST=http://localhost:8000,http://mysite.com \
-   -e CAHRT_TYPE={apexcharts/uplot}
+   -e CHART_TYPE={apexcharts/uplot}
    -e TZ=Europe/Berlin \
    ghcr.io/maexled/mystrom-django-interface
 ```
