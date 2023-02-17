@@ -31,7 +31,7 @@ services:
       - interface
     privileged: true
     environment:
-      - SQL_URL${SQL_URL}
+      - SQL_URL=${SQL_URL}
       - TZ=${TZ}
 
   shelly-data-collector:
@@ -42,7 +42,7 @@ services:
       - interface
     privileged: true
     environment:
-      - SQL_URL${SQL_URL}
+      - SQL_URL=${SQL_URL}
       - TZ=${TZ}
 
   interface-reverse-proxy:
