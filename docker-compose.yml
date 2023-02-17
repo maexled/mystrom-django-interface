@@ -10,6 +10,7 @@ services:
     expose:
       - "8000"
     environment:
+      - ENGINE_TYPE=${ENGINE_TYPE}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
@@ -30,7 +31,7 @@ services:
       - interface
     privileged: true
     environment:
-      - SQL_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SQL_URL=${SQL_URL}
       - TZ=${TZ}
 
   shelly-data-collector:
@@ -41,7 +42,7 @@ services:
       - interface
     privileged: true
     environment:
-      - SQL_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SQL_URL=${SQL_URL}
       - TZ=${TZ}
 
   interface-reverse-proxy:
