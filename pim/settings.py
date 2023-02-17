@@ -95,10 +95,18 @@ WSGI_APPLICATION = 'pim.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-if os.getenv("DB_NAME"):
+ENGINETYPE = os.getenv('ENGINE_TYPE', 'sqlite3')
+ENGINE = None;
+if ENGINETYPE == 'mysql':
+    ENGINE = 'django.db.backends.mysql'
+elif ENGINETYPE == 'postgresql':
+    ENGINE = 'django.db.backends.postgresql_psycopg2'
+
+
+if ENGINE:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql', 
+            'ENGINE': ENGINE, 
             'NAME': os.environ["DB_NAME"],
             'USER': os.environ["DB_USER"],
             'PASSWORD': os.environ["DB_PASSWORD"],
@@ -148,8 +156,6 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
