@@ -1,4 +1,12 @@
 <script>
+  /**
+   * Load the result data from the REST API and render a chart into the given element
+   * 
+   * @param {number} id the id of the shelly device
+   * @param {number} elementId the id of the html element to render the chart in
+   * @param {String} startDate the start date of the query
+   * @param {String} endDate the end date of the query
+   */
   async function loadShellyChart(id, elementId, startDate, endDate) {
     return new Promise((resolve) => {
       const startQuery = startDate == "" ? "" : "?start=" + startDate;
@@ -6,17 +14,17 @@
         endDate == "" ? "" : (startDate == "" ? "?" : "&") + "end=" + endDate;
       console.log(
         "Requesting REST: {% url 'shelly_rest_device_index' %}" +
-          id.split("-")[1] +
-          "/results/" +
-          startQuery +
-          endQuery
+        id.split("-")[1] +
+        "/results/" +
+        startQuery +
+        endQuery
       );
       $.get(
         "{% url 'shelly_rest_device_index' %}" +
-          id.split("-")[1] +
-          "/results/" +
-          startQuery +
-          endQuery,
+        id.split("-")[1] +
+        "/results/" +
+        startQuery +
+        endQuery,
         function (data) {
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
@@ -81,79 +89,159 @@
             hoursDifferenceBetweedDates.toFixed(2) +
             " hours</h5>";
 
-          const options = {
-            series: [
-              {
-                name: "Power",
-                data: powerList,
-              }
-            ],
-            chart: {
-              height: 500,
-              type: "line",
-              zoom: {
-                enabled: true,
-              },
-              animations: {
-                enabled: false
-              }
-            },
-            colors: ["#C80815", "#6050dc", "#39FF14", "#dfa801"],
-            dataLabels: {
-              enabled: false,
-            },
-            stroke: {
-              width: 2,
-              curve: "straight",
-            },
-            title: {
-              text: "Power Usage",
-              align: "left",
-            },
-            grid: {
-              row: {
-                colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
-                opacity: 0.5,
-              },
-            },
-            xaxis: {
-              categories: data.map((entry) =>
-                new Date(entry.date).toLocaleString()
-              ),
-              hideOverlappingLabels: true,
-              tickAmount: 5,
-            },
-            yaxis: {
-              decimalsInFloat: 2,
-            },
-          };
-          options.series.push(...emeterSeries);
-          // reducde series data when too much data is available
-          if (data.length > 1000) {
-            const modolu = 5;
-            options.series = options.series.map((series) => {
-              const newData = [];
-              for (let i = 0; i < series.data.length; i++) {
-                if (i % modolu == 0) {
-                  newData.push(series.data[i]);
-                }
-              }
-              return {
-                name: series.name,
-                data: newData,
-              };
-            });
-            options.xaxis.categories = options.xaxis.categories.filter(
-              (category, index) => {
-                return index % modolu == 0;
-              }
-            );
-          }
-          const chart = new ApexCharts(chartElement, options);
-          chart.render();
+          const xAxisList = data.map((entry) => entry.date);
+          renderShellyChart(powerList, emeterSeries, xAxisList, chartElement);
           resolve();
         }
       );
     });
   }
+
+  {% if CHART_TYPE == 'apexcharts' %}
+  /**
+   * Render the chart with the given data as apex chart
+   * 
+   * @param {Array} powerList the power list
+   * @param {Array} emeterSeries the emeter series
+   * @param {Array} xAxisList the x axis list
+   * @param {HTMLElement} chartElement the chart element to render the chart in
+   */
+  function renderShellyChart(powerList, emeterSeries, xAxisList, chartElement) {
+    const options = {
+      series: [
+        {
+          name: "Power",
+          data: powerList,
+        }
+      ],
+      chart: {
+        height: 500,
+        type: "line",
+        zoom: {
+          enabled: true,
+        },
+        animations: {
+          enabled: false
+        }
+      },
+      colors: ["#C80815", "#6050dc", "#39FF14", "#dfa801"],
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        width: 2,
+        curve: "straight",
+      },
+      title: {
+        text: "Power Usage",
+        align: "left",
+      },
+      grid: {
+        row: {
+          colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+          opacity: 0.5,
+        },
+      },
+      xaxis: {
+        categories: xAxisList,
+        hideOverlappingLabels: true,
+        tickAmount: 5,
+      },
+      yaxis: {
+        decimalsInFloat: 2,
+      },
+    };
+    options.series.push(...emeterSeries);
+    // reducde series data when too much data is available
+    if (options.series.length > 1000) {
+      const modolu = 5;
+      options.series = options.series.map((series) => {
+        const newData = [];
+        for (let i = 0; i < series.data.length; i++) {
+          if (i % modolu == 0) {
+            newData.push(series.data[i]);
+          }
+        }
+        return {
+          name: series.name,
+          data: newData,
+        };
+      });
+      options.xaxis.categories = options.xaxis.categories.filter(
+        (category, index) => index % modolu == 0
+      );
+    }
+    const chart = new ApexCharts(chartElement, options);
+    chart.render();
+  }
+
+  {% elif CHART_TYPE == "uplot" %}
+  /**
+   * Render the chart with the given data as uPlot chart
+   * 
+   * @param {Array} powerList the power list
+   * @param {Array} wsList the ws list
+   * @param {Array} temperatureList the temperature list
+   * @param {Array} xAxisList the x axis list
+   * @param {HTMLElement} chartElement the chart element to render the chart in
+   */
+   function renderShellyChart(powerList, emeterSeries, xAxisList, chartElement) {
+    let data = [
+      xAxisList.map((date) => new Date(date)/1000),
+      powerList,
+      ...emeterSeries.map(series => series.data)
+    ];
+
+    const opts = {
+      width: chartElement.offsetWidth,
+      height: 600,
+      title: "Power Usage",
+      tzDate: xAxisList => uPlot.tzDate(new Date(xAxisList * 1e3), 'Europe/Berlin'),
+      drawOrder: ["series", "axes"],
+      axes: [
+        {
+          label: "Time",
+          values: (u, vals, space) => vals.map(v => new Date(v*1000).toLocaleTimeString().substring(0, 5) + "h"),
+        },
+        {
+          values: (u, vals, space) => vals.map(v => v.toFixed(1) + "W/h"),
+          label: "Power",
+          space: 50,
+          scale: "W/h",
+          grid: {
+            show: true,
+            stroke: "rgba(0,0,0,0.2)",
+            width: 1,
+          },
+          ticks: {
+            show: true,
+            stroke: "rgba(0,0,0,0.2)",
+            width: 1,
+          }
+        },
+      ],
+      series: [
+        {},
+        {
+          label: "Power",
+          scale: "W/h",
+          value: (u, v) => v == null ? null : v.toFixed(1) + "W/h",
+          stroke: "red",
+          width: 3 / devicePixelRatio,
+        },
+        ...emeterSeries.map((series, index) => {
+          return {
+            label: series.name,
+            scale: "W/h",
+            value: (u, v) => v == null ? null : v.toFixed(1) + "W/h",
+            stroke: index == 0 ? "purple" : index == 1 ? "green" : "orange",
+            width: 2 / devicePixelRatio,
+          }
+        })
+      ],
+    };
+
+    let u = new uPlot(opts, data, chartElement);
+  }
+  {% endif %}
 </script>
