@@ -1,4 +1,3 @@
-{% with chartType="uplot" %}
 <script>
   /**
    * Load the result data from the REST API and render a chart into the given element
@@ -79,7 +78,7 @@
     });
   }
 
-  {% if chartType == 'mystrom' %}
+  {% if CHART_TYPE == 'apexcharts' %}
   /**
    * Render the chart with the given data as apex chart
    * 
@@ -164,7 +163,7 @@
     chart.render();
   }
 
-  {% elif chartType == "uplot" %}
+  {% elif CHART_TYPE == "uplot" %}
   /**
    * Render the chart with the given data as uPlot chart
    * 
@@ -240,4 +239,3 @@
   }
   {% endif %}
 </script>
-{% endwith %}
