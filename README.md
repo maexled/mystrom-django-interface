@@ -52,7 +52,7 @@ Make sure that the static files are not deployed yet. For this look the next sec
 
 ## Run with docker-compose and needed containers
 ```sh
-ENGINE_TYPE={mysql/postgresql} DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com TZ=Europe/Berlin docker compose up
+ENGINE_TYPE={mysql/postgresql} DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SQL_URL={mysql+pymysql/postgresql+psycopg2}://user:password@host:5432/database SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com TZ=Europe/Berlin docker compose up
 ```
 Make sure to replace the content in `{...}` with your variable of your choice.
 
