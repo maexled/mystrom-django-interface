@@ -13,5 +13,5 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-CMD python manage.py makemigrations && python manage.py migrate && gunicorn --bind=0.0.0.0:8000 --timeout 600 --workers=3 --threads=3 pim.wsgi:application
+CMD python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind=0.0.0.0:8000 --timeout 600 --workers=3 --threads=3 pim.wsgi:application
 EXPOSE 8000/tcp

@@ -7,8 +7,8 @@ services:
 #   build: .
     privileged: true
     restart: always
-    expose:
-      - "8000"
+    ports:
+      - "80:8000"
     environment:
       - ENGINE_TYPE=${ENGINE_TYPE}
       - DB_HOST=${DB_HOST}
@@ -45,15 +45,3 @@ services:
     environment:
       - SQL_URL=${SQL_URL}
       - TZ=${TZ}
-
-  interface-reverse-proxy:
-    container_name: interface-reverse-proxy
-    image: nginx
-    depends_on:
-      - interface
-    restart: always
-    volumes:
-      - ./.nginx/compose/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./static:/var/www/static
-    ports:
-      - "80:80"

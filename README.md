@@ -80,8 +80,10 @@ python manage.py migrate
    
 ## Run App
 ```sh
+python manage.py collectstatic
 python manage.py runserver
 ```
+Static files are served with WhiteNoise.
 
 ## Run with docker
 ```sh
@@ -103,8 +105,6 @@ docker run \
    ghcr.io/maexled/mystrom-django-interface
 ```
 Make sure to replace the content in `{...}` with your variable of your choice.
-
-Make sure that the static files are not deployed yet. For this look the next section
 
 ## Run with docker-compose and needed containers
 ```sh
