@@ -1,5 +1,26 @@
 ## About the Project
-The project is designed to manage mystrom devices in an easy interface.
+
+The Django application is designed to help users view power usage charts for MyStrom and Shelly3EM devices. 
+In order to collect the data for these devices, users can use the data collection scripts provided by the application. These scripts can be found at the following links:
+- https://github.com/maexled/mystrom-python
+- https://github.com/maexled/shelly-status-saver
+
+Alternatively, users can [use the docker-compose file](#run-with-docker-compose-and-needed-containers) provided by the application to run the data collection scripts and the Django application together. This will simplify the setup process and make it easier to get started with the application.
+
+There are two main views: the Device view and the Result view. Here's what each view looks like:
+
+#### Device View
+
+![Device View](https://user-images.githubusercontent.com/39833217/219866064-89c24f07-c297-46cb-9003-b8dc2c2c39a0.png)
+
+In the Device view, users can add new devices that they want to track. Once added, the device will be listed in the Devices table.
+
+#### Result View
+
+![Result View](https://user-images.githubusercontent.com/39833217/219866092-e4213690-3adf-4afd-a188-a7bbefdfc8fa.png)
+
+In the Result view, users can view power usage charts for their devices. They can select the device they want to view data for, and then choose the date range they want to view data for.
+
 
 ## Prerequisites
 
@@ -16,6 +37,40 @@ cd mystrom-django-interface/
 ```sh
 pip install -r requirements.txt 
 ```
+
+## Environment Variables
+
+Here's a breakdown of all the environment variables that are being used in the Django application:
+
+- `ENGINE_TYPE`: Specifies the type of database engine to use, either `mysql` or `postgresql`.
+- `DB_NAME`: Specifies the name of the database to use.
+- `DB_USER`: Specifies the username to use when connecting to the database.
+- `DB_PASSWORD`: Specifies the password to use when connecting to the database.
+- `DB_HOST`: Specifies the host to use when connecting to the database.
+- `DB_PORT`: Specifies the port to use when connecting to the database.
+- `SECRET_KEY`: Specifies the secret key to use for the Django application.
+- `ALLOWED_HOSTS`: Specifies a comma-separated list of hosts that are allowed to access the application.
+- `CORS_ORIGIN_ALLOW_ALL`: Specifies whether to allow all cross-origin requests.
+- `CORS_ORIGIN_WHITELIST`: Specifies a comma-separated list of whitelisted origins for cross-origin requests.
+- `CHART_TYPE`: Specifies the type of chart library to use, either `apexcharts` or `uplot`.
+- `TZ`: Specifies the timezone to use for the Django application.
+
+### Chart Types
+
+The `CHART_TYPE` environment variable specifies the type of chart library to use for the Django application. There are two options: `apexcharts` and `uplot`. Here are examples of what each chart type looks like:
+
+#### ApexCharts
+
+![ApexCharts Example](https://user-images.githubusercontent.com/39833217/219865603-48d5e207-5ba7-4d97-b784-579ec487aed4.png)
+
+ApexCharts is a modern charting library that provides a wide range of chart types and features. However, it can have longer loading times when dealing with very large datasets.
+
+#### uPlot
+
+![uPlot Example](https://user-images.githubusercontent.com/39833217/219865544-9721bd75-73cb-40f4-8516-4a4ec52d21c1.png)
+
+
+uPlot is a lightweight and fast charting library that excels at handling large datasets with many data points. It's an ideal choice for applications that need to render charts with a lot of data, but with a smaller feature set.
 
 ## Database migrations
 ```sh
