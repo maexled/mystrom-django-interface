@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http.response import JsonResponse
+from django.utils import timezone
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
  
@@ -7,7 +8,7 @@ from .models import MystromResult, MystromDevice
 from .serializers import MystromDeviceSerializer, MystromResultSerializer
 from rest_framework.decorators import api_view
 
-import datetime
+from datetime import datetime
 
 @api_view(['GET', 'POST', 'DELETE'])
 def device_list(request):
@@ -61,11 +62,37 @@ def device_results(request, id):
         device = MystromDevice.objects.get(id=id) 
     except MystromDevice.DoesNotExist: 
         return JsonResponse({'message': 'The device does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-    
-    start_date=request.GET.get('start', datetime.datetime.now() + datetime.timedelta(days=-1))
-    end_date=request.GET.get('end', datetime.datetime.now())
 
-    results = MystromResult.objects.filter(device_id=device, date__range=[start_date,end_date])
+    
+    start_param = request.GET.get('start')
+    end_param = request.GET.get('end')
+
+    if start_param:
+        try:
+            start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            try:
+                start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M')
+            except ValueError:
+                start_date = datetime.strptime(start_param, '%Y-%m-%d')
+        start_date = timezone.make_aware(start_date)
+    else:
+        start_date = timezone.now() + timezone.timedelta(days=-1)
+
+    if end_param:
+        try:
+            end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            try:
+                end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M')
+            except ValueError:
+                end_date = datetime.strptime(end_param, '%Y-%m-%d')
+        end_date = timezone.make_aware(end_date)
+    else:
+        end_date = timezone.now()
+
+    results = MystromResult.objects.filter(device_id=device, date__range=[start_date, end_date])
+
 
     if request.method == 'GET':
         if request.GET.get('minimize', "true") != "false":
