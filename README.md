@@ -1,11 +1,6 @@
 ## About the Project
 
-The Django application is designed to help users view power usage charts for MyStrom and Shelly3EM devices. 
-In order to collect the data for these devices, users can use the data collection scripts provided by the application. These scripts can be found at the following links:
-- https://github.com/maexled/mystrom-python
-- https://github.com/maexled/shelly-status-saver
-
-Alternatively, users can [use the docker-compose file](#run-with-docker-compose-and-needed-containers) provided by the application to run the data collection scripts and the Django application together. This will simplify the setup process and make it easier to get started with the application.
+The Django application is designed to allow users to view power usage charts for MyStrom and Shelly3EM devices. The application collects the current power usage data every 60 seconds, which is then used to calculate and present power usage charts to the user.
 
 There are two main views: the Device view and the Result view. Here's what each view looks like:
 
@@ -108,7 +103,7 @@ Make sure to replace the content in `{...}` with your variable of your choice.
 
 ## Run with docker-compose and needed containers
 ```sh
-ENGINE_TYPE={mysql/postgresql} DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SQL_URL={mysql+pymysql/postgresql+psycopg2}://user:password@host:5432/database SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com CHART_TYPE={apexcharts/uplot} TZ=Europe/Berlin docker compose up
+ENGINE_TYPE={mysql/postgresql} DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com CHART_TYPE={apexcharts/uplot} TZ=Europe/Berlin docker compose up
 ```
 Make sure to replace the content in `{...}` with your variable of your choice.
 

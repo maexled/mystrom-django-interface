@@ -1,5 +1,7 @@
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import RegexValidator
+import requests
+import json
 
 class MystromDevice(models.Model):
 
@@ -17,6 +19,30 @@ class MystromDevice(models.Model):
     def __repr__(self):
         return "<Device(id='%s', name='%s', ip='%s')>" % (
                 self.id, self.name, self.ip)
+    
+    @transaction.atomic
+    def get_and_save_result(self):
+        try:
+            response = requests.get(f'http://{self.ip}/report')
+        except requests.exceptions.ConnectionError as e:
+            print(f'Device {self.name} with ip address {self.ip} seems to be not reachable.')
+            return
+        except requests.exceptions.Timeout as e:
+            print(f'Request to device {self.name} with ip address {self.ip} timed out.')
+            return
+        except requests.exceptions.RequestException as e:
+            print(f'Request to device {self.name} with ip address {self.ip} failed.')
+            return
+
+        try:
+            response = json.loads(response.text)
+        except json.decoder.JSONDecodeError:
+            print(f'Request to device {self.name} with ip address {self.ip} returns invalid JSON response.')
+            return
+
+        result = MystromResult(device=self, power=response["power"], ws=response["Ws"], relay=1 if response["relay"] else 0, temperature=response["temperature"])
+        result.save()
+        return result
 
     class Meta:
         db_table = 'devices'

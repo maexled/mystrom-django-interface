@@ -3,8 +3,8 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
  
-from .models import Shelly3EMDevice, Shelly3EMResult, Shelly3EMEmeterResult
-from .serializers import Shelly3EMDeviceSerializer, Shelly3EMResultSerializer, Shelly3EMEmeterResultSerializer
+from .models import Shelly3EMDevice, Shelly3EMResult
+from .serializers import Shelly3EMDeviceSerializer, Shelly3EMResultSerializer
 from rest_framework.decorators import api_view
 
 import datetime
@@ -70,4 +70,16 @@ def device_results(request, id):
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True) 
-        return JsonResponse(result_serializer.data, safe=False) 
+        return JsonResponse(result_serializer.data, safe=False)
+    
+@api_view(['POST'])
+def get_and_save_device_results(request):
+    
+    if request.method == 'POST':
+        devices = Shelly3EMDevice.objects.filter(active=True).all()
+        results = []
+        for device in devices:
+            result = device.get_and_save_result()
+            results.append(result)
+        result_serializer = Shelly3EMResultSerializer(results, many=True)
+        return JsonResponse(result_serializer.data, safe=False, status=status.HTTP_200_OK)

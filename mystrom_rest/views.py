@@ -113,3 +113,15 @@ def calculateAverage(result, amount) -> MystromResult:
     result.ws /= amount
     result.temperature /= amount
     return result
+
+@api_view(['POST'])
+def get_and_save_device_results(request):
+    
+    if request.method == 'POST':
+        devices = MystromDevice.objects.filter(active=True).all()
+        results = []
+        for device in devices:
+            result = device.get_and_save_result()
+            results.append(result)
+        result_serializer = MystromResultSerializer(results, many=True)
+        return JsonResponse(result_serializer.data, safe=False, status=status.HTTP_200_OK)

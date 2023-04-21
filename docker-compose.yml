@@ -17,31 +17,16 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS},interface
       - CORS_ORIGIN_ALLOW_ALL=${CORS_ORIGIN_ALLOW_ALL}
       - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
       - CHART_TYPE=${CHART_TYPE}
       - TZ=${TZ}
 
-
-  mystrom-data-collector:
-    container_name: mystrom-data-collector
-    image: ghcr.io/maexled/mystrom-python:master
-    restart: always
+  requester:
+    container_name: interface-requester
+    image: curlimages/curl:7.80.0
+    command: ["sh", "-c", "while true; do sleep 60; curl -X POST http://interface:8000/shelly-api/devices/request-and-save-results >/dev/null 2>&1 & curl -X POST http://interface:8000/api/devices/request-and-save-results >/dev/null 2>&1; done"]    
     depends_on:
       - interface
-    privileged: true
-    environment:
-      - SQL_URL=${SQL_URL}
-      - TZ=${TZ}
 
-  shelly-data-collector:
-    container_name: shelly-data-collector
-    image: ghcr.io/maexled/shelly-status-saver:master
-    restart: always
-    depends_on:
-      - interface
-    privileged: true
-    environment:
-      - SQL_URL=${SQL_URL}
-      - TZ=${TZ}
