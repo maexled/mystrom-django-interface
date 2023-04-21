@@ -1,5 +1,7 @@
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import RegexValidator
+import requests
+import json
 
 class Shelly3EMDevice(models.Model):
 
@@ -17,6 +19,34 @@ class Shelly3EMDevice(models.Model):
     def __repr__(self):
         return "<Device(id='%s', name='%s', ip='%s')>" % (
                 self.id, self.name, self.ip)
+
+    @transaction.atomic
+    def get_and_save_result(self):
+        try:
+            response = requests.get(f'http://{self.ip}/status')
+        except requests.exceptions.ConnectionError as e:
+            print(f'Device {self.name} with ip address {self.ip} seems to be not reachable.')
+            return
+        except requests.exceptions.Timeout as e:
+            print(f'Request to device {self.name} with ip address {self.ip} timed out.')
+            return
+        except requests.exceptions.RequestException as e:
+            print(f'Request to device {self.name} with ip address {self.ip} failed.')
+            return
+
+        try:
+            response = json.loads(response.text)
+        except json.decoder.JSONDecodeError:
+            print(f'Request to device {self.name} with ip address {self.ip} returns invalid JSON response.')
+            return
+
+        result = Shelly3EMResult(device=self, total_power=response['total_power'])
+        result.save()
+        id = 0
+        for emeter in response["emeters"]:
+            Shelly3EMEmeterResult(result=result, emeter_id=id, power=emeter["power"], pf=emeter["pf"], current=emeter["current"], voltage=emeter["voltage"], total=emeter["total"], total_returned=emeter["total_returned"]).save()
+            id += 1
+        return result
 
     class Meta:
         db_table = 'shelly3em_devices'
