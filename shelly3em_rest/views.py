@@ -63,35 +63,10 @@ def device_results(request, id):
     except Shelly3EMDevice.DoesNotExist: 
         return JsonResponse({'message': 'The device does not exist'}, status=status.HTTP_404_NOT_FOUND) 
     
-        
-    start_param = request.GET.get('start')
-    end_param = request.GET.get('end')
+    start_param = request.GET.get('start', timezone.now() + timezone.timedelta(days=-1))
+    end_param = request.GET.get('end', timezone.now())
 
-    if start_param:
-        try:
-            start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            try:
-                start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M')
-            except ValueError:
-                start_date = datetime.strptime(start_param, '%Y-%m-%d')
-        start_date = timezone.make_aware(start_date)
-    else:
-        start_date = timezone.now() + timezone.timedelta(days=-1)
-
-    if end_param:
-        try:
-            end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            try:
-                end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M')
-            except ValueError:
-                end_date = datetime.strptime(end_param, '%Y-%m-%d')
-        end_date = timezone.make_aware(end_date)
-    else:
-        end_date = timezone.now()
-
-    results = Shelly3EMResult.objects.filter(device_id=device, date__range=[start_date, end_date])
+    results = Shelly3EMResult.objects.filter(device_id=device, date__range=[start_param, end_param])
     results = results.prefetch_related('emeters')
 
     if request.method == 'GET':

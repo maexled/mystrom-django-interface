@@ -51,15 +51,7 @@
   createdElement.appendChild(chartElement);
 
   function dateFormat(date) {
-    const second = date.getSeconds();
-    const minute = date.getMinutes();
-    const hour = date.getHours();
-
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    return date.toISOString()
   }
   const now = new Date();
   const start = new Date(now);

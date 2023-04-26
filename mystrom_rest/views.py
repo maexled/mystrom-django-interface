@@ -67,31 +67,10 @@ def device_results(request, id):
     start_param = request.GET.get('start')
     end_param = request.GET.get('end')
 
-    if start_param:
-        try:
-            start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            try:
-                start_date = datetime.strptime(start_param, '%Y-%m-%d %H:%M')
-            except ValueError:
-                start_date = datetime.strptime(start_param, '%Y-%m-%d')
-        start_date = timezone.make_aware(start_date)
-    else:
-        start_date = timezone.now() + timezone.timedelta(days=-1)
+    start_param = request.GET.get('start', timezone.now() + timezone.timedelta(days=-1))
+    end_param = request.GET.get('end', timezone.now())
 
-    if end_param:
-        try:
-            end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            try:
-                end_date = datetime.strptime(end_param, '%Y-%m-%d %H:%M')
-            except ValueError:
-                end_date = datetime.strptime(end_param, '%Y-%m-%d')
-        end_date = timezone.make_aware(end_date)
-    else:
-        end_date = timezone.now()
-
-    results = MystromResult.objects.filter(device_id=device, date__range=[start_date, end_date])
+    results = MystromResult.objects.filter(device_id=device, date__range=[start_param, end_param])
 
 
     if request.method == 'GET':
