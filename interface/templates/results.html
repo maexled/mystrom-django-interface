@@ -101,8 +101,11 @@
 {% endblock %}
 
 {% block scripts %}
+{% if CHART_TYPE == 'apexcharts' %}
 <script src="{% static 'js/apexcharts.min.js' %}"></script>
+{% elif CHART_TYPE == "uplot" %}
 <script src="{% static 'js/uPlot.iife.min.js' %}"></script>
+{% endif %}
 
 {% include "mystrom_chart.html" %}
 {% include "shelly_chart.html" %}

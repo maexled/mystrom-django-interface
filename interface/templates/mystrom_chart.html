@@ -42,6 +42,39 @@
           }
           const firstDate = new Date(data[0].date);
           const lastDate = new Date(data[data.length - 1].date);
+
+          let currentHour = new Date(firstDate);
+          currentHour.setMinutes(0);
+          currentHour.setSeconds(0);
+          currentHour.setMilliseconds(0);
+          const powerPerHour = [];
+          while (currentHour <= lastDate) {
+            const nextHour = new Date(currentHour);
+            nextHour.setHours(currentHour.getHours() + 1);
+            const filteredData = data.filter(
+              (entry) =>
+                new Date(entry.date) >= currentHour &&
+                new Date(entry.date) < nextHour
+            );
+            const powerList = filteredData.map((entry) => entry.power);
+            let total = powerList.reduce((a, b) => a + b, 0);
+  
+            let percentageOfHour = 1;
+            // if the first or last entry is not in the current hour, calculate the percentage of the hour
+            if (firstDate - currentHour < 1000*60*60*24 && currentHour.getHours() == firstDate.getHours()) {
+              percentageOfHour = (60 - firstDate.getMinutes()) / 60;
+            } else if (lastDate - currentHour < 1000*60*60*24 && currentHour.getHours() == lastDate.getHours()) {
+              percentageOfHour = lastDate.getMinutes() / 60;
+            }
+            const average = ((total / powerList.length) * percentageOfHour) / 1000;
+            if (!isNaN(average)) {
+              powerPerHour.push(average);
+            } else {
+              powerPerHour.push(0);
+            }
+            currentHour = nextHour;
+          }
+
           const differenceBetweenDates = lastDate - firstDate;
           const hoursDifferenceBetweedDates =
             differenceBetweenDates / 1000 / 60 / 60;
@@ -49,10 +82,7 @@
           const powerList = data.map((entry) => entry.power);
           const wsList = data.map((entry) => entry.ws);
           const temperatureList = data.map((entry) => entry.temperature);
-          let total = 0;
-          for (let power of powerList) {
-            total += power;
-          }
+          let total = powerList.reduce((a, b) => a + b, 0);
           const average = total / powerList.length;
           const totalProducedkWh =
             (average * hoursDifferenceBetweedDates) / 1000;
@@ -69,12 +99,32 @@
             "kWh</b> produced in " +
             hoursDifferenceBetweedDates.toFixed(2) +
             " hours</h5>";
+          
+          informationElement.innerHTML +=
+             "<h5>New Method Leads to <b>" +
+              powerPerHour.reduce((a, b) => a + b, 0).toFixed(2) +
+            "kWh</b> produced in " +
+            hoursDifferenceBetweedDates.toFixed(2) +
+            " hours</h5>";
 
           const xAxisList = data.map((entry) => entry.date);
           renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
-          resolve();
         }
-      );
+      ).fail((jqXHR, textStatus, errorThrown) => {
+        console.log("Error: " + errorThrown);
+        console.log("Status: " + textStatus);
+        const informationElement = document.getElementById(
+          elementId + "-information"
+        );
+        if (informationElement)
+          informationElement.innerHTML =
+            '<h3 class="text-danger">Error while requesting data of device ' +
+            id +
+            "</h3>";
+      }).always(() => {
+        console.log("Request finished");
+        resolve();
+      });
     });
   }
 

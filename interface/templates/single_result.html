@@ -16,8 +16,11 @@
 {% endblock %}
 
 {% block scripts %}
+{% if CHART_TYPE == 'apexcharts' %}
 <script src="{% static 'js/apexcharts.min.js' %}"></script>
+{% elif CHART_TYPE == "uplot" %}
 <script src="{% static 'js/uPlot.iife.min.js' %}"></script>
+{% endif %}
 {% with device|classname as modelclass %}
 
 {% if modelclass == 'Shelly3EMDevice' %}
