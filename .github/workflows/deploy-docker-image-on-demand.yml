@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Get branch name based on PR
-        uses: andrevalentin/get-branch-name-by-pr@v1
+        uses: bahmutov/get-branch-name-by-pr@v1
         id: pr_data
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -35,8 +35,8 @@ jobs:
 
       - name: Replace slashes with dashes in branch name
         id: branch_name_formatted
-        run: |
-          echo "::set-output name=formatted_branch::${{ steps.pr_data.outputs.branch }}" | sed 's/\//-/g'
+        run: echo "formatted_branch=$(echo ${{ steps.pr_data.outputs.branch }} | sed 's/\//-/g')" >> $GITHUB_OUTPUT
+
         
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -54,13 +54,13 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: ${{ steps.branch_name_formatted.outputs.formatted_branch }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
