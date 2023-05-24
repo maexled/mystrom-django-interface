@@ -26,6 +26,8 @@
         startQuery +
         endQuery,
         function (data) {
+          data = JSON.parse(data);
+          const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
             elementId + "-information"
@@ -40,19 +42,19 @@
             resolve();
             return;
           }
-          const firstDate = new Date(data[0].date);
-          const lastDate = new Date(data[data.length - 1].date);
+          const firstDate = new Date(results[0].date);
+          const lastDate = new Date(results[results.length - 1].date);
           const differenceBetweenDates = lastDate - firstDate;
           const hoursDifferenceBetweedDates =
             differenceBetweenDates / 1000 / 60 / 60;
 
-          const powerList = data.map((entry) => entry.total_power);
+          const powerList = results.map((entry) => entry.total_power);
           let emeter0List, emeter1List, emeter2List = [];
           let emeterSeries = [];
-          if (data[0].emeters) {
-            emeter0List = data.map((entry) => entry.emeters[0] ? entry.emeters[0].power : 0);
-            emeter1List = data.map((entry) => entry.emeters[1] ? entry.emeters[1].power : 0);
-            emeter2List = data.map((entry) => entry.emeters[2] ? entry.emeters[2].power : 0);
+          if (results[0].emeters) {
+            emeter0List = results.map((entry) => entry.emeters[0] ? entry.emeters[0].power : 0);
+            emeter1List = results.map((entry) => entry.emeters[1] ? entry.emeters[1].power : 0);
+            emeter2List = results.map((entry) => entry.emeters[2] ? entry.emeters[2].power : 0);
             emeterSeries = [
               {
                 name: "Phase A",
@@ -70,28 +72,21 @@
           }
           let total = powerList.reduce((a, b) => a + b, 0);
           const average = total / powerList.length;
-          const totalProducedkWh =
-            (average * hoursDifferenceBetweedDates) / 1000;
+          const totalProducedkWh = data.total_power / 1000;
+          const totalReturnedkWh = data.total_returned_power / 1000;
 
-          /**
-           * old method to calculate the total produced kWh
           informationElement.innerHTML =
-            "<h5>Average of " +
-            hoursDifferenceBetweedDates.toFixed(2) +
-            " hours: " +
-            average.toFixed(2) +
-            "Wh</h5>";
-          informationElement.innerHTML +=
             "<h5>Leads to <b>" +
             totalProducedkWh.toFixed(2) +
             "kWh</b> produced in " +
             hoursDifferenceBetweedDates.toFixed(2) +
             " hours</h5>";
-          **/
-          informationElement.innerHTML = "";
-          calc(data, informationElement);
+          informationElement.innerHTML +=
+            "Total returned power: <b>" +
+            totalReturnedkWh.toFixed(2) +
+            "kWh</b><br>";
 
-          const xAxisList = data.map((entry) => entry.date);
+          const xAxisList = results.map((entry) => entry.date);
           renderShellyChart(powerList, emeterSeries, xAxisList, chartElement);
         }
       ).fail((jqXHR, textStatus, errorThrown) => {
@@ -109,72 +104,6 @@
         resolve();
       });
     });
-  }
-
-  /**
-   * Calculate the total kwH, the total returned kwH and the total returned kwH of the second emeter
-   * 
-   * @param {Array} data the data to render
-   * @para {HTMLElement} element the element to render the chart in
-   */
-  function calc(data, informationElement) {
-    const firstDate = new Date(data[0].date);
-    const lastDate = new Date(data[data.length - 1].date);
-
-    let currentHour = new Date(firstDate);
-    currentHour.setMinutes(0);
-    currentHour.setSeconds(0);
-    currentHour.setMilliseconds(0);
-    const powerPerHour_total = [];
-    const powerPerHour_returned_total = []
-    const powerPerHour_returned_total_b = []
-    while (currentHour <= lastDate) {
-      const nextHour = new Date(currentHour);
-      nextHour.setHours(currentHour.getHours() + 1);
-      const filteredData = data.filter(
-        (entry) =>
-          new Date(entry.date) >= currentHour &&
-          new Date(entry.date) < nextHour
-      );
-      const powerList = filteredData.map((entry) => entry.total_power);
-      let total = powerList.reduce((a, b) => a + b, 0);
-      let returned_total = powerList.filter((power) => power < 0).reduce((a, b) => a + b, 0);
-      let returned_total_b = filteredData.map((entry) => entry.emeters[1] ? entry.emeters[1].power : 0).filter((power) => power < 0).reduce((a, b) => a + b, 0);
-
-      let percentageOfHour = 1;
-      // if the first or last entry is not in the current hour, calculate the percentage of the hour
-      if (firstDate - currentHour < 1000 * 60 * 60 * 24 && currentHour.getHours() == firstDate.getHours()) {
-        percentageOfHour = (60 - firstDate.getMinutes()) / 60;
-      } else if (lastDate - currentHour < 1000 * 60 * 60 * 24 && currentHour.getHours() == lastDate.getHours()) {
-        percentageOfHour = lastDate.getMinutes() / 60;
-      }
-      const average_total = ((total / powerList.length) * percentageOfHour) / 1000;
-      const average_returned_total = ((returned_total / powerList.length) * percentageOfHour) / 1000;
-      const average_returned_total_b = ((returned_total_b / powerList.length) * percentageOfHour) / 1000;
-      powerPerHour_total.push(!isNaN(average_total) ? average_total : 0);
-      powerPerHour_returned_total.push(!isNaN(average_returned_total) ? average_returned_total : 0);
-      powerPerHour_returned_total_b.push(!isNaN(average_returned_total_b) ? average_returned_total_b : 0);
-      currentHour = nextHour;
-    }
-    const total = powerPerHour_total.reduce((a, b) => a + b, 0).toFixed(2);
-    const total_returned = powerPerHour_returned_total.reduce((a, b) => a + b, 0).toFixed(2);
-    const total_returned_b = powerPerHour_returned_total_b.reduce((a, b) => a + b, 0).toFixed(2);
-    const hoursDifferenceBetweedDates =
-      (lastDate - firstDate) / 1000 / 60 / 60;
-    informationElement.innerHTML +=
-      "<h5>Leads to <b>" +
-      total +
-      "kWh</b> produced in " +
-      hoursDifferenceBetweedDates.toFixed(2) +
-      " hours</h5>";
-    informationElement.innerHTML +=
-      "<h5>Total returned: <b>" +
-      total_returned +
-      "kWh</b></h5>";
-    informationElement.innerHTML +=
-      "<h5>Total returned on Phase B: <b>" +
-      total_returned_b +
-      "kWh</b></h5>";
   }
 
   {% if CHART_TYPE == 'apexcharts' %}

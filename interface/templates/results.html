@@ -45,7 +45,8 @@
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="mystrom-{{ device.id }}" onclick="toggleChart(this.id), 'mystrom'">
+                <button class="btn btn-info" id="mystrom-{{ device.id }}"
+                  onclick="toggleChart(this.id, '{{ device.name }}', 'mystrom')">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -83,7 +84,8 @@
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="shelly-{{ device.id }}" onclick="toggleChart(this.id, 'shelly')">
+                <button class="btn btn-info" id="shelly-{{ device.id }}"
+                  onclick="toggleChart(this.id, '{{ device.name }}', 'shelly')">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -125,7 +127,7 @@
     return date.toISOString();
   }
 
-  function toggleChart(id, device_type) {
+  function toggleChart(id, name, device_type) {
     const startDateElement = document.getElementById("start-date-" + id);
     const endDateElement = document.getElementById("end-date-" + id);
     const elementId = "chart-" + id;
@@ -183,6 +185,7 @@
           await loadMystromChart(id, elementId, startDate, endDate);
         }
         chartElement.removeChild(loadingAnimation);
+        informationElement.innerHTML = "<h4>Information about device <b>" + name + "</b></h4>" + informationElement.innerHTML;
       })
 
       document.getElementById(id).innerHTML = "Hide Chart for Device " + id;

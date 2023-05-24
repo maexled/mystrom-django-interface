@@ -26,6 +26,8 @@
         startQuery +
         endQuery,
         data => {
+          data = JSON.parse(data);
+          const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
             elementId + "-information"
@@ -40,74 +42,26 @@
             resolve();
             return;
           }
-          const firstDate = new Date(data[0].date);
-          const lastDate = new Date(data[data.length - 1].date);
-
-          let currentHour = new Date(firstDate);
-          currentHour.setMinutes(0);
-          currentHour.setSeconds(0);
-          currentHour.setMilliseconds(0);
-          const powerPerHour = [];
-          while (currentHour <= lastDate) {
-            const nextHour = new Date(currentHour);
-            nextHour.setHours(currentHour.getHours() + 1);
-            const filteredData = data.filter(
-              (entry) =>
-                new Date(entry.date) >= currentHour &&
-                new Date(entry.date) < nextHour
-            );
-            const powerList = filteredData.map((entry) => entry.power);
-            let total = powerList.reduce((a, b) => a + b, 0);
-  
-            let percentageOfHour = 1;
-            // if the first or last entry is not in the current hour, calculate the percentage of the hour
-            if (firstDate - currentHour < 1000*60*60*24 && currentHour.getHours() == firstDate.getHours()) {
-              percentageOfHour = (60 - firstDate.getMinutes()) / 60;
-            } else if (lastDate - currentHour < 1000*60*60*24 && currentHour.getHours() == lastDate.getHours()) {
-              percentageOfHour = lastDate.getMinutes() / 60;
-            }
-            const average = ((total / powerList.length) * percentageOfHour) / 1000;
-            if (!isNaN(average)) {
-              powerPerHour.push(average);
-            } else {
-              powerPerHour.push(0);
-            }
-            currentHour = nextHour;
-          }
+          const firstDate = new Date(results[0].date);
+          const lastDate = new Date(results[results.length - 1].date);
 
           const differenceBetweenDates = lastDate - firstDate;
           const hoursDifferenceBetweedDates =
             differenceBetweenDates / 1000 / 60 / 60;
 
-          const powerList = data.map((entry) => entry.power);
-          const wsList = data.map((entry) => entry.ws);
-          const temperatureList = data.map((entry) => entry.temperature);
-          let total = powerList.reduce((a, b) => a + b, 0);
-          const average = total / powerList.length;
-          const totalProducedkWh =
-            (average * hoursDifferenceBetweedDates) / 1000;
+          const powerList = results.map((entry) => entry.power);
+          const wsList = results.map((entry) => entry.ws);
+          const temperatureList = results.map((entry) => entry.temperature);
+          const totalPowerkWh = data.total_power / 1000;
 
           informationElement.innerHTML =
-            "<h5>Average of " +
-            hoursDifferenceBetweedDates.toFixed(2) +
-            " hours: " +
-            average.toFixed(2) +
-            "Wh</h5>";
-          informationElement.innerHTML +=
             "<h5>Leads to <b>" +
-            totalProducedkWh.toFixed(2) +
-            "kWh</b> produced in " +
-            hoursDifferenceBetweedDates.toFixed(2) +
-            " hours</h5>";
-          
-          informationElement.innerHTML +=
-             "<h5>New Method Leads to <b>" +
-              powerPerHour.reduce((a, b) => a + b, 0).toFixed(2) +
+            totalPowerkWh.toFixed(2) +
             "kWh</b> produced in " +
             hoursDifferenceBetweedDates.toFixed(2) +
             " hours</h5>";
 
-          const xAxisList = data.map((entry) => entry.date);
+          const xAxisList = results.map((entry) => entry.date);
           renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
         }
       ).fail((jqXHR, textStatus, errorThrown) => {
@@ -225,7 +179,7 @@
    */
   function renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement) {
     let data = [
-      xAxisList.map((date) => new Date(date)/1000),
+      xAxisList.map((date) => new Date(date) / 1000),
       powerList,
       wsList,
       temperatureList
@@ -240,7 +194,7 @@
       axes: [
         {
           label: "Time",
-          values: (u, vals, space) => vals.map(v => new Date(v*1000).toLocaleTimeString().substring(0, 5) + "h"),
+          values: (u, vals, space) => vals.map(v => new Date(v * 1000).toLocaleTimeString().substring(0, 5) + "h"),
         },
         {
           values: (u, vals, space) => vals.map(v => v.toFixed(1) + "W/h"),
