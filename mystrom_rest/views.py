@@ -75,12 +75,10 @@ def device_results(request, id):
                                            start_param, end_param]).order_by('date')
 
     average_power = (
-        MystromResult.objects
-        .filter(device_id=device, date__range=(start_param, end_param))
+        results
         .annotate(hour=TruncHour('date'))
         .values('hour')
         .annotate(average_power=Avg('power'))
-        .order_by('hour')
     )
 
     total_power = average_power.aggregate(Sum('average_power'))[

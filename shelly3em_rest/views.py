@@ -73,31 +73,21 @@ def device_results(request, id):
     results = results.prefetch_related('emeters')
 
     average_power = (
-        Shelly3EMResult.objects
-        .filter(device_id=device, date__range=(start_param, end_param))
+        results
         .annotate(hour=TruncHour('date'))
         .values('hour')
         .annotate(average_power=Avg('total_power'))
-        .order_by('hour')
-    )
-
-    total_power = average_power.aggregate(Sum('average_power'))[
-        'average_power__sum']
-
-    average_power_returned = (
-        Shelly3EMResult.objects
-        .filter(device_id=device, date__range=(start_param, end_param))
-        .annotate(hour=TruncHour('date'))
-        .values('hour')
-        .annotate(average_power=Avg(Case(
+        .annotate(average_power_returned=Avg(Case(
             When(total_power__gt=0, then=0),
             default='total_power',
             output_field=FloatField(),
         )))
-        .order_by('hour')
     )
-    total_returned_power = average_power_returned.aggregate(Sum('average_power'))[
+
+    total_power = average_power.aggregate(Sum('average_power'))[
         'average_power__sum']
+    total_returned_power = average_power.aggregate(Sum('average_power_returned'))[
+        'average_power_returned__sum']
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True)
