@@ -1,7 +1,8 @@
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import MystromDevice
+from .models import MystromDevice, MystromResult
 
 class MystromDeviceTests(APITestCase):
     def test_create_device(self):
@@ -25,3 +26,40 @@ class MystromDeviceTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(MystromDevice.objects.count(), 0)
+    
+
+class MystromResultsTest(APITestCase):
+    amount_of_results = 60
+    average_power = 0
+    def setUp(self):
+        device = MystromDevice.objects.create(name='NewDevice', ip='localhost')
+
+        for i in range(self.amount_of_results):
+            power = 500
+            result = MystromResult(device=device, power=power, ws=power, relay=1, temperature=25, date=timezone.now() + timezone.timedelta(minutes=-1 * i))
+            result.save()
+
+        # calulcate average power
+        self.average_power = 500
+        self.assertEqual(MystromResult.objects.count(), self.amount_of_results)
+    
+
+    def test_get_results_from_device(self):
+        """
+        Ensure we get results from a device.
+        """
+        url = "%s?minimize=false" % reverse('rest_device_results', kwargs={'id': 1})
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.json().get('results')), self.amount_of_results)
+        self.assertEqual(response.json().get('total_power'), self.average_power)
+
+    def test_get_results_from_device_date_range_no_value(self):
+        """
+        Ensure we get no result when date range has no results
+        """
+        start_param = "2023-05-12T22:00:00.835Z"
+        end_param = "2023-05-15T22:00:00.835Z"
+
+        url = f"{reverse('rest_device_results', kwargs={'id': 1})}?minimize=false&start={start_param}&end={end_param}"
+        response = self.client.get(url, format='json')
+        self.assertEqual(len(response.json().get('results')), 0)
