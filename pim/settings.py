@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'interface',
     'mystrom_rest',
-    'shelly3em_rest'
+    'shelly3em_rest',
+    'debug_toolbar',
 ]
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -56,7 +57,9 @@ MESSAGE_TAGS = {
 }
 
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -96,6 +99,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pim.wsgi.application'
 
+if DEBUG:
+    import socket  # only if you haven't already imported this
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

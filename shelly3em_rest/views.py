@@ -7,10 +7,6 @@ from rest_framework import status
 from django.db.models import Avg, Sum, Case, When, FloatField
 from django.db.models.functions import TruncHour
 
-import json
-import gzip
-from django.http import HttpResponse
-
 from .models import Shelly3EMDevice, Shelly3EMResult
 from .serializers import Shelly3EMDeviceSerializer, Shelly3EMResultSerializer
 from rest_framework.decorators import api_view
@@ -94,19 +90,7 @@ def device_results(request, id):
         result_data = {'results': result_serializer.data,
                        'total_power': total_power,
                        'total_returned_power': total_returned_power, }
-        if 'gzip' in request.META.get('HTTP_ACCEPT_ENCODING', ''):
-            # Compress JSON data using gzip
-            compressed_data = gzip.compress(
-                json.dumps(result_data).encode('utf-8'))
-
-            # Set response headers
-            response = HttpResponse()
-            response['Content-Encoding'] = 'gzip'
-            response['Content-Length'] = len(compressed_data)
-            response.write(compressed_data)
-            return response
-        else:
-            return JsonResponse(result_data, safe=False)
+        return JsonResponse(result_data, safe=False)
 
 
 @api_view(['POST'])
@@ -119,4 +103,5 @@ def get_and_save_device_results(request):
             result = device.get_and_save_result()
             results.append(result)
         result_serializer = Shelly3EMResultSerializer(results, many=True)
+
         return JsonResponse(result_serializer.data, safe=False, status=status.HTTP_200_OK)

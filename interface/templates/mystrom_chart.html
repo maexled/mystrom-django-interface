@@ -26,7 +26,6 @@
         startQuery +
         endQuery,
         data => {
-          data = JSON.parse(data);
           const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
