@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.test import TestCase
 from mystrom_rest.models import MystromDevice, MystromResult
+from bs4 import BeautifulSoup
 
 class MystromDevicesTestCase(TestCase):
     def setUp(self):
@@ -65,3 +66,17 @@ class MystromDevicesTestCase(TestCase):
         self.assertContains(response, "Edit device")
         self.assertContains(response, "<form")
         self.assertContains(response, "</form>")
+
+class MystromResultsTestCase(TestCase):
+    def setUp(self):
+        self.device = MystromDevice.objects.create(name="Device 1", ip="192.168.0.205")
+
+    def test_get_results_page(self):
+        url = reverse('results')
+        response = self.client.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        button = soup.find(id='mystrom-' + str(self.device.id))
+        self.assertIsNotNone(button)
+        
+
+    

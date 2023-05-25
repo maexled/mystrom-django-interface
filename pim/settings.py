@@ -114,7 +114,6 @@ if ENGINETYPE == 'mysql':
 elif ENGINETYPE == 'postgresql':
     ENGINE = 'django.db.backends.postgresql_psycopg2'
 
-
 if ENGINE:
     DATABASES = {
         'default': {
