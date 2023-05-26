@@ -29,7 +29,8 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-mystrom-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="start-date-mystrom-{{ device.id }}"
+                  class="form-control">
               </div>
 
               <div class="form-group col-md-4">
@@ -44,7 +45,8 @@
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="mystrom-{{ device.id }}" onclick="toggleChart(this.id), 'mystrom'">
+                <button class="btn btn-info" id="mystrom-{{ device.id }}"
+                  onclick="toggleChart(this.id, '{{ device.name }}', 'mystrom')">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -66,7 +68,8 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-shelly-{{ device.id }}" class="form-control">
+                <input placeholder="Select date" type="date" id="start-date-shelly-{{ device.id }}"
+                  class="form-control">
               </div>
 
               <div class="form-group col-md-4">
@@ -81,7 +84,8 @@
             </div>
             <div class="form-row">
               <div class="form-group col-md-9">
-                <button class="btn btn-info" id="shelly-{{ device.id }}" onclick="toggleChart(this.id, 'shelly')">
+                <button class="btn btn-info" id="shelly-{{ device.id }}"
+                  onclick="toggleChart(this.id, '{{ device.name }}', 'shelly')">
                   Show Chart for Device {{ device.id }}
                 </button>
               </div>
@@ -101,8 +105,11 @@
 {% endblock %}
 
 {% block scripts %}
+{% if CHART_TYPE == 'apexcharts' %}
 <script src="{% static 'js/apexcharts.min.js' %}"></script>
+{% elif CHART_TYPE == "uplot" %}
 <script src="{% static 'js/uPlot.iife.min.js' %}"></script>
+{% endif %}
 
 {% include "mystrom_chart.html" %}
 {% include "shelly_chart.html" %}
@@ -120,7 +127,7 @@
     return date.toISOString();
   }
 
-  function toggleChart(id, device_type) {
+  function toggleChart(id, name, device_type) {
     const startDateElement = document.getElementById("start-date-" + id);
     const endDateElement = document.getElementById("end-date-" + id);
     const elementId = "chart-" + id;
@@ -153,21 +160,23 @@
       let endDate = endDateElement.value;
       if (!startDate) {
         startDate = new Date();
-        startDate.setHours(0);
-        startDate.setMinutes(0);
-        startDate.setSeconds(0);
-        startDate = dateFormat(startDate);
-        startDateElement.value = startDate;
+      } else {
+        startDate = new Date(startDate);
       }
+      startDate.setHours(0);
+      startDate.setMinutes(0);
+      startDate.setSeconds(0);
+      startDate = dateFormat(startDate);
       if (!endDate) {
         endDate = new Date();
-        endDate.setHours(0);
-        endDate.setMinutes(0);
-        endDate.setSeconds(0);
         endDate.setDate(endDate.getDate() + 1);
-        endDate = dateFormat(endDate);
-        endDateElement.value = endDate;
+      } else {
+        endDate = new Date(endDate);
       }
+      endDate.setHours(0);
+      endDate.setMinutes(0);
+      endDate.setSeconds(0);
+      endDate = dateFormat(endDate);
 
       setTimeout(async () => {
         if (device_type == "shelly") {
@@ -176,6 +185,7 @@
           await loadMystromChart(id, elementId, startDate, endDate);
         }
         chartElement.removeChild(loadingAnimation);
+        informationElement.innerHTML = "<h4>Information about device <b>" + name + "</b></h4>" + informationElement.innerHTML;
       })
 
       document.getElementById(id).innerHTML = "Hide Chart for Device " + id;

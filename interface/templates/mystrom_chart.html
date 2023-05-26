@@ -26,12 +26,13 @@
         startQuery +
         endQuery,
         data => {
+          const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
             elementId + "-information"
           );
 
-          if (data.length == 0) {
+          if (results.length == 0) {
             informationElement.innerHTML =
               '<h3 class="text-danger">Query of device ' +
               id +
@@ -40,41 +41,43 @@
             resolve();
             return;
           }
-          const firstDate = new Date(data[0].date);
-          const lastDate = new Date(data[data.length - 1].date);
+          const firstDate = new Date(results[0].date);
+          const lastDate = new Date(results[results.length - 1].date);
+
           const differenceBetweenDates = lastDate - firstDate;
           const hoursDifferenceBetweedDates =
             differenceBetweenDates / 1000 / 60 / 60;
 
-          const powerList = data.map((entry) => entry.power);
-          const wsList = data.map((entry) => entry.ws);
-          const temperatureList = data.map((entry) => entry.temperature);
-          let total = 0;
-          for (let power of powerList) {
-            total += power;
-          }
-          const average = total / powerList.length;
-          const totalProducedkWh =
-            (average * hoursDifferenceBetweedDates) / 1000;
+          const powerList = results.map((entry) => entry.power);
+          const wsList = results.map((entry) => entry.ws);
+          const temperatureList = results.map((entry) => entry.temperature);
+          const totalPowerkWh = data.total_power / 1000;
 
           informationElement.innerHTML =
-            "<h5>Average of " +
-            hoursDifferenceBetweedDates.toFixed(2) +
-            " hours: " +
-            average.toFixed(2) +
-            "Wh</h5>";
-          informationElement.innerHTML +=
             "<h5>Leads to <b>" +
-            totalProducedkWh.toFixed(2) +
+            totalPowerkWh.toFixed(2) +
             "kWh</b> produced in " +
             hoursDifferenceBetweedDates.toFixed(2) +
             " hours</h5>";
 
-          const xAxisList = data.map((entry) => entry.date);
+          const xAxisList = results.map((entry) => entry.date);
           renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
-          resolve();
         }
-      );
+      ).fail((jqXHR, textStatus, errorThrown) => {
+        console.log("Error: " + errorThrown);
+        console.log("Status: " + textStatus);
+        const informationElement = document.getElementById(
+          elementId + "-information"
+        );
+        if (informationElement)
+          informationElement.innerHTML =
+            '<h3 class="text-danger">Error while requesting data of device ' +
+            id +
+            "</h3>";
+      }).always(() => {
+        console.log("Request finished");
+        resolve();
+      });
     });
   }
 
@@ -175,7 +178,7 @@
    */
   function renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement) {
     let data = [
-      xAxisList.map((date) => new Date(date)/1000),
+      xAxisList.map((date) => new Date(date) / 1000),
       powerList,
       wsList,
       temperatureList
@@ -190,7 +193,7 @@
       axes: [
         {
           label: "Time",
-          values: (u, vals, space) => vals.map(v => new Date(v*1000).toLocaleTimeString().substring(0, 5) + "h"),
+          values: (u, vals, space) => vals.map(v => new Date(v * 1000).toLocaleTimeString().substring(0, 5) + "h"),
         },
         {
           values: (u, vals, space) => vals.map(v => v.toFixed(1) + "W/h"),
