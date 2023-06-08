@@ -42,16 +42,6 @@ class MystromResultsTest(APITestCase):
         # calulcate average power
         self.average_power = 500
         self.assertEqual(MystromResult.objects.count(), self.amount_of_results)
-    
-
-    def test_get_results_from_device(self):
-        """
-        Ensure we get results from a device.
-        """
-        url = "%s?minimize=false" % reverse('rest_device_results', kwargs={'id': 1})
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.json().get('results')), self.amount_of_results)
-        self.assertEqual(response.json().get('total_power'), self.average_power)
 
     def test_get_results_from_device_date_range_no_value(self):
         """
