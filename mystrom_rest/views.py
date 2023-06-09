@@ -78,7 +78,9 @@ def device_results(request, id):
         .annotate(average_power=Avg('power'))
     )
 
-    if average_power.count() > 0:
+    total_power = 0
+
+    if average_power.exists():
 
         # reduce power average based on if first or last hour is not complete
         first_hour = average_power.first()['hour']
@@ -97,8 +99,6 @@ def device_results(request, id):
 
         total_power = average_power.aggregate(Sum('average_power'))[
             'average_power__sum'] - first_hour_power_reduction - last_hour_power_reduction
-    else:
-        total_power = 0
 
     if request.method == 'GET':
         if request.GET.get('minimize', "false") == "true":

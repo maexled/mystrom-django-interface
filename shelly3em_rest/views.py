@@ -65,8 +65,7 @@ def device_results(request, id):
     end_param = request.GET.get('end', timezone.now())
 
     results = Shelly3EMResult.objects.filter(
-        device_id=device, date__range=[start_param, end_param])
-    results = results.prefetch_related('emeters')
+        device_id=device, date__range=[start_param, end_param]).prefetch_related('emeters')
 
     average_power = (
         results
@@ -80,7 +79,10 @@ def device_results(request, id):
         )))
     )
 
-    if average_power.count() > 0:
+    total_power = 0    
+    total_returned_power = 0
+    
+    if average_power.exists():
 
         # reduce power average based on if first or last hour is not complete
         first_hour = average_power.first()['hour']
@@ -103,9 +105,6 @@ def device_results(request, id):
             'average_power__sum'] - first_hour_power_reduction - last_hour_power_reduction
         total_returned_power = average_power.aggregate(Sum('average_power_returned'))[
             'average_power_returned__sum'] - first_hour_power_returned_reduction - last_hour_power_returned_reduction
-    else:
-        total_power = 0    
-        total_returned_power = 0
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True)
