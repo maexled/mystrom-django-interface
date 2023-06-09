@@ -83,14 +83,14 @@ def device_results(request, id):
         # reduce power average based on if first or last hour is not complete
         first_hour = average_power.first()['hour']
         first_hour_results = results.filter(
-            date__range=[first_hour, first_hour + timezone.timedelta(hours=1)]).order_by('date')
+            date__range=[first_hour, first_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
         first_hour_percent = (first_hour_results.first()['date'] - first_hour) / timezone.timedelta(hours=1)
         first_hour_power_reduction = average_power.first()['average_power'] * first_hour_percent
 
 
         last_hour = average_power.last()['hour']
         last_hour_results = results.filter(
-            date__range=[last_hour, last_hour + timezone.timedelta(hours=1)]).order_by('date')
+            date__range=[last_hour, last_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
         last_hour_percent = ((last_hour + timezone.timedelta(hours=1)) - last_hour_results.last()['date']) / timezone.timedelta(hours=1)
         last_hour_power_reduction = average_power.last()['average_power'] * last_hour_percent
 

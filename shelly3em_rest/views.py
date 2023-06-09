@@ -80,10 +80,32 @@ def device_results(request, id):
         )))
     )
 
-    total_power = average_power.aggregate(Sum('average_power'))[
-        'average_power__sum']
-    total_returned_power = average_power.aggregate(Sum('average_power_returned'))[
-        'average_power_returned__sum']
+    if average_power.count() > 0:
+
+        # reduce power average based on if first or last hour is not complete
+        first_hour = average_power.first()['hour']
+        first_hour_results = results.filter(
+            date__range=[first_hour, first_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
+        first_hour_percent = (first_hour_results.first()['date'] - first_hour) / timezone.timedelta(hours=1)
+        first_hour_power_reduction = average_power.first()['average_power'] * first_hour_percent
+        first_hour_power_returned_reduction = average_power.first()['average_power_returned'] * first_hour_percent
+
+
+        last_hour = average_power.last()['hour']
+        last_hour_results = results.filter(
+            date__range=[last_hour, last_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
+        last_hour_percent = ((last_hour + timezone.timedelta(hours=1)) - last_hour_results.last()['date']) / timezone.timedelta(hours=1)
+        last_hour_power_reduction = average_power.last()['average_power'] * last_hour_percent
+        last_hour_power_returned_reduction = average_power.last()['average_power_returned'] * last_hour_percent
+
+
+        total_power = average_power.aggregate(Sum('average_power'))[
+            'average_power__sum'] - first_hour_power_reduction - last_hour_power_reduction
+        total_returned_power = average_power.aggregate(Sum('average_power_returned'))[
+            'average_power_returned__sum'] - first_hour_power_returned_reduction - last_hour_power_returned_reduction
+    else:
+        total_power = 0    
+        total_returned_power = 0
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True)
