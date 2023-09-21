@@ -65,7 +65,7 @@ def device_results(request, id):
     end_param = request.GET.get('end', timezone.now())
 
     results = Shelly3EMResult.objects.filter(
-        device_id=device, date__range=[start_param, end_param]).prefetch_related('emeters')
+        device_id=device, date__range=[start_param, end_param]).order_by('date').prefetch_related('emeters')
 
     average_power = (
         results

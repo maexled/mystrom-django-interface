@@ -1,2 +1,0 @@
-// have to create because of issue with python manage.py collectstatic
-// https://stackoverflow.com/questions/73406581/python-manage-py-collectstatic-error-cannot-find-rest-framework-bootstrap-min-c
