@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-name: "django*"
+        dependency-type: "direct"
+      - dependency-name: "requests"
+        dependency-type: "production"
