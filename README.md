@@ -19,7 +19,7 @@ In the Result view, users can view power usage charts for their devices. They ca
 
 ## Prerequisites
 
-* \>= python3.8
+* \>= python3.10 [Django Supported Python Versions](https://docs.djangoproject.com/en/5.0/releases/5.0/#python-compatibility)
 
 ## Installation
 
