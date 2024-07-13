@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Get branch name based on PR
-        uses: bahmutov/get-branch-name-by-pr@v1
+        uses: bahmutov/get-branch-name-by-pr@v1.1.2
         id: pr_data
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
