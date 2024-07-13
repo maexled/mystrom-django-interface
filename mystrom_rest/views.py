@@ -10,6 +10,7 @@ from django.db.models.functions import TruncHour
 from .models import MystromResult, MystromDevice
 from .serializers import MystromDeviceSerializer, MystromResultSerializer
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -106,10 +107,14 @@ def device_results(request, id):
         else:
             minimizedList = results
         result_serializer = MystromResultSerializer(minimizedList, many=True)
-        result_data = {'results': result_serializer.data,
-                       'total_power': total_power}
+        
+        if request.META.get('HTTP_ACCEPT') == 'text/csv':
+            result_data = result_serializer.data
+        else:
+            result_data = {'results': result_serializer.data,
+                           'total_power': total_power}
 
-        return JsonResponse(result_data, safe=False)
+        return Response(result_data)
 
 def minimizeResultList(results) -> list:
     resultList = []
