@@ -5,104 +5,85 @@
 <div class="container">
   <div class="px-5 my-5 text-center">
     <h1>Device Results</h1>
-    <p></p>
   </div>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>IP</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="devices-list">
-      {% for device in devices %}
-      <tr id="device-{{ device.id }}" class="device-row">
-        <td>{{ device.id }}</td>
-        <td>{{ device.name }}</td>
-        <td>{{ device.ip }}</td>
-        <td>
-
-          <div class="form-row">
-            <div class="form-row">
-              <div class="form-group col-md-4">
-                <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-mystrom-{{ device.id }}"
-                  class="form-control">
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="end-date-{{ device.id }}">End date</label>
-                <input placeholder="Select date" type="date" id="end-date-mystrom-{{ device.id }}" class="form-control">
-              </div>
-              <div class="form-group col-md-2">
-                <button class="btn btn-danger" id="reset-dates-mystrom-{{ device.id }}" onclick="resetDates(this)">
-                  Reset
-                </button>
-              </div>
+  <div class="row" id="devices-list">
+    {% for device in devices %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="card-title">MyStrom-Device {{ device.id }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ device.name }}</h6>
+              <p class="card-text">IP: {{ device.ip }}</p>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-9">
-                <button class="btn btn-info" id="mystrom-{{ device.id }}"
-                  onclick="toggleChart(this.id, '{{ device.name }}', 'mystrom')">
-                  Show Chart for Device {{ device.id }}
-                </button>
-              </div>
-            </div>
+            <i class="fas fa-microchip fa-2x text-primary"></i>
           </div>
-
-
-        </td>
-      </tr>
-      {% endfor %}
-      {% for device in shelly_devices %}
-      <tr id="device-{{ device.id }}" class="device-row">
-        <td>{{ device.id }}</td>
-        <td>{{ device.name }}</td>
-        <td>{{ device.ip }}</td>
-        <td>
-
-          <div class="form-row">
-            <div class="form-row">
-              <div class="form-group col-md-4">
-                <label for="start-date-{{ device.id }}">Start date</label>
-                <input placeholder="Select date" type="date" id="start-date-shelly-{{ device.id }}"
-                  class="form-control">
-              </div>
-
-              <div class="form-group col-md-4">
-                <label for="end-date-{{ device.id }}">End date</label>
-                <input placeholder="Select date" type="date" id="end-date-shelly-{{ device.id }}" class="form-control">
-              </div>
-              <div class="form-group col-md-2">
-                <button class="btn btn-danger" id="reset-dates-shelly-{{ device.id }}" onclick="resetDates(this)">
-                  Reset
-                </button>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group col-md-9">
-                <button class="btn btn-info" id="shelly-{{ device.id }}"
-                  onclick="toggleChart(this.id, '{{ device.name }}', 'shelly')">
-                  Show Chart for Device {{ device.id }}
-                </button>
-              </div>
-            </div>
+          <div class="form-group">
+            <label for="start-date-{{ device.id }}">Start date</label>
+            <input type="date" id="start-date-mystrom-{{ device.id }}" class="form-control" placeholder="Select date">
           </div>
-
-
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div id="chartContainer">
-
+          <div class="form-group">
+            <label for="end-date-{{ device.id }}">End date</label>
+            <input type="date" id="end-date-mystrom-{{ device.id }}" class="form-control" placeholder="Select date">
+          </div>
+          <button class="btn btn-danger mb-2" id="reset-dates-mystrom-{{ device.id }}" onclick="resetDates(this)">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+          <div class="btn-group" role="group" aria-label="Chart Actions">
+            <button class="btn btn-info" id="mystrom-{{ device.id }}" onclick="toggleChart(this.id, '{{ device.name }}', 'mystrom')">
+              <i class="fas fa-chart-line"></i> Show Chart
+            </button>
+            <button class="btn btn-primary" id="download-csv-mystrom-{{ device.id }}" onclick="downloadCSV('mystrom-{{ device.id }}', 'mystrom')">
+              <i class="fas fa-file-csv"></i> Download CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% for device in shelly_devices %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="card-title">Shelly-Device {{ device.id }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ device.name }}</h6>
+              <p class="card-text">IP: {{ device.ip }}</p>
+            </div>
+            <i class="fas fa-microchip fa-2x text-primary"></i>
+          </div>
+          <div class="form-group">
+            <label for="start-date-{{ device.id }}">Start date</label>
+            <input type="date" id="start-date-shelly-{{ device.id }}" class="form-control" placeholder="Select date">
+          </div>
+          <div class="form-group">
+            <label for="end-date-{{ device.id }}">End date</label>
+            <input type="date" id="end-date-shelly-{{ device.id }}" class="form-control" placeholder="Select date">
+          </div>
+          <button class="btn btn-danger mb-2" id="reset-dates-shelly-{{ device.id }}" onclick="resetDates(this)">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+          <div class="btn-group" role="group" aria-label="Chart Actions">
+            <button class="btn btn-info" id="shelly-{{ device.id }}" onclick="toggleChart(this.id, '{{ device.name }}', 'shelly')">
+              <i class="fas fa-chart-line"></i> Show Chart
+            </button>
+            <button class="btn btn-primary" id="download-csv-shelly-{{ device.id }}" onclick="downloadCSV('shelly-{{ device.id }}', 'shelly')">
+              <i class="fas fa-file-csv"></i> Download CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
+
+  <div id="chartContainer"></div>
 </div>
 {% endblock %}
+
 
 {% block scripts %}
 {% if CHART_TYPE == 'apexcharts' %}
@@ -127,9 +108,104 @@
     return date.toISOString();
   }
 
-  function toggleChart(id, name, device_type) {
+  function getStartAndEndDate(id) {
     const startDateElement = document.getElementById("start-date-" + id);
     const endDateElement = document.getElementById("end-date-" + id);
+    let startDate = startDateElement.value;
+    let endDate = endDateElement.value;
+    if (!startDate) {
+      startDate = new Date();
+    } else {
+      startDate = new Date(startDate);
+    }
+    startDate.setHours(0);
+    startDate.setMinutes(0);
+    startDate.setSeconds(0);
+    startDate = dateFormat(startDate);
+    if (!endDate) {
+      endDate = new Date();
+      endDate.setDate(endDate.getDate() + 1);
+    } else {
+      endDate = new Date(endDate);
+    }
+    endDate.setHours(0);
+    endDate.setMinutes(0);
+    endDate.setSeconds(0);
+    endDate = dateFormat(endDate);
+
+    return { startDate, endDate };
+  }
+
+  function downloadCSV(id, device_type) {
+    const downloadButton = document.getElementById("download-csv-" + id);
+    downloadButton.disabled = true;
+
+    const { startDate, endDate } = getStartAndEndDate(id);
+
+    var params = new URLSearchParams({
+      start: startDate == "" ? undefined : startDate,
+      end: endDate == "" ? undefined : endDate
+    });
+
+    var endPointName;
+    if (device_type == "shelly") {
+      endPointName = "{% url 'shelly_rest_device_index' %}"
+    } else {
+      // mystrom
+      endPointName = "{% url 'rest_device_index' %}"
+    }
+
+    var deviceId = id.split("-")[1];
+    var baseUrl = endPointName + deviceId + "/results/";
+    var url = baseUrl + '?' + params.toString();
+
+    const loadingAnimation = document.createElement("div");
+    loadingAnimation.className = "spinner-border";
+    loadingAnimation.style = "width: 0.5rem; height: 0.5rem;";
+    loadingAnimation.role = "status";
+    downloadButton.appendChild(loadingAnimation);
+
+    $.ajax({
+      url: url,
+      type: 'GET',
+      headers: {
+        'Accept': 'text/csv'
+      },
+      success: function (data) {
+        // Create a Blob from the CSV data
+        var blob = new Blob([data], { type: 'text/csv' });
+
+        // Create a link element
+        var link = document.createElement('a');
+
+        // Create a URL for the Blob and set it as the href attribute
+        link.href = window.URL.createObjectURL(blob);
+
+        // Set the download attribute to the desired file name
+        link.download = 'data.csv';
+
+        // Append the link to the body
+        document.body.appendChild(link);
+
+        // Programmatically click the link to trigger the download
+        link.click();
+
+        // Remove the link from the document
+        document.body.removeChild(link);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error('Error fetching the CSV data:', textStatus, errorThrown);
+      }
+    }).always(function () {
+      // Remove the loading animation
+      downloadButton.removeChild(loadingAnimation);
+      downloadButton.disabled = false;
+    });
+
+
+  }
+
+  function toggleChart(id, name, device_type) {
     const elementId = "chart-" + id;
     if (shown.includes(id)) {
       document.getElementById(elementId).remove();
@@ -156,27 +232,7 @@
       loadingAnimation.role = "status";
       chartElement.appendChild(loadingAnimation);
 
-      let startDate = startDateElement.value;
-      let endDate = endDateElement.value;
-      if (!startDate) {
-        startDate = new Date();
-      } else {
-        startDate = new Date(startDate);
-      }
-      startDate.setHours(0);
-      startDate.setMinutes(0);
-      startDate.setSeconds(0);
-      startDate = dateFormat(startDate);
-      if (!endDate) {
-        endDate = new Date();
-        endDate.setDate(endDate.getDate() + 1);
-      } else {
-        endDate = new Date(endDate);
-      }
-      endDate.setHours(0);
-      endDate.setMinutes(0);
-      endDate.setSeconds(0);
-      endDate = dateFormat(endDate);
+      const { startDate, endDate } = getStartAndEndDate(id);
 
       setTimeout(async () => {
         if (device_type == "shelly") {

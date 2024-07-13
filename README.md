@@ -50,6 +50,8 @@ Here's a breakdown of all the environment variables that are being used in the D
 - `CHART_TYPE`: Specifies the type of chart library to use, either `apexcharts` or `uplot`.
 - `TZ`: Specifies the timezone to use for the Django application.
 
+The environment variables can be set in the `.env` file when running the application with docker-compose.
+
 ### Chart Types
 
 The `CHART_TYPE` environment variable specifies the type of chart library to use for the Django application. There are two options: `apexcharts` and `uplot`. Here are examples of what each chart type looks like:
@@ -103,9 +105,8 @@ Make sure to replace the content in `{...}` with your variable of your choice.
 
 ## Run with docker-compose and needed containers
 ```sh
-ENGINE_TYPE={mysql/postgresql} DB_HOST=host DB_PORT=port DB_NAME=dbname DB_USER=username DB_PASSWORD=passowrd SECRET_KEY=secretkey ALLOWED_HOSTS=localhost,myhost.com CORS_ORIGIN_ALLOW_ALL=False CORS_ORIGIN_WHITELIST=http://localhost,http://myhost.com CHART_TYPE={apexcharts/uplot} TZ=Europe/Berlin docker compose up
+docker compose up
 ```
-Make sure to replace the content in `{...}` with your variable of your choice.
 
 ## Configurations
 ### Important things to know

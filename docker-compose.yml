@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   interface:
     container_name: interface
@@ -9,19 +7,8 @@ services:
     restart: always
     ports:
       - "80:8000"
-    environment:
-      - ENGINE_TYPE=${ENGINE_TYPE}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS},interface
-      - CORS_ORIGIN_ALLOW_ALL=${CORS_ORIGIN_ALLOW_ALL}
-      - CORS_ORIGIN_WHITELIST=${CORS_ORIGIN_WHITELIST}
-      - CHART_TYPE=${CHART_TYPE}
-      - TZ=${TZ}
+    env_file:
+      - .env
 
   requester:
     container_name: interface-requester

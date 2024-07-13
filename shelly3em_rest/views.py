@@ -10,6 +10,7 @@ from django.db.models.functions import TruncHour
 from .models import Shelly3EMDevice, Shelly3EMResult
 from .serializers import Shelly3EMDeviceSerializer, Shelly3EMResultSerializer
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -108,10 +109,16 @@ def device_results(request, id):
 
     if request.method == 'GET':
         result_serializer = Shelly3EMResultSerializer(results, many=True)
-        result_data = {'results': result_serializer.data,
-                       'total_power': total_power,
-                       'total_returned_power': total_returned_power, }
-        return JsonResponse(result_data, safe=False)
+        
+        if request.META.get('HTTP_ACCEPT') == 'text/csv':
+            result_data = result_serializer.data
+        else:
+            result_data = {'results': result_serializer.data,
+                           'total_power': total_power,
+                           'total_returned_power': total_returned_power, }
+
+
+        return Response(result_data)
 
 
 @api_view(['POST'])
