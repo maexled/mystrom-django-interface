@@ -1,0 +1,4 @@
+secrets:
+  ignore:
+    - type: secret
+      pattern: "DB_PASSWORD=postgres"
