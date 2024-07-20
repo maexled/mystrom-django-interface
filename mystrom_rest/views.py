@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.http.response import JsonResponse
 from django.utils import timezone
+from dateutil import parser
+from datetime import timedelta
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
@@ -80,54 +82,94 @@ def device_results(request, id):
     start_param = request.GET.get("start")
     end_param = request.GET.get("end")
 
-    start_param = request.GET.get("start", timezone.now() + timezone.timedelta(days=-1))
-    end_param = request.GET.get("end", timezone.now())
+    start_param = request.GET.get(
+        "start", (timezone.now() - timedelta(days=1)).isoformat()
+    )
+    end_param = request.GET.get("end", timezone.now().isoformat())
+
+    # Use dateutil parser to handle different formats
+    start_param = parser.parse(start_param)
+    end_param = parser.parse(end_param)
+
+    # Ensure dates are timezone-aware
+    if start_param.tzinfo is None:
+        start_param = timezone.make_aware(start_param)
+    if end_param.tzinfo is None:
+        end_param = timezone.make_aware(end_param)
+
+    logger.debug(f"Request for device {device.id} from {start_param} to {end_param}")
+
+    # Determine interval length based on date range
+    interval_length = 5 if (end_param - start_param).days <= 7 else 15
 
     query_15min = f"""
+        SELECT 
+            time_bucket('{interval_length} minutes', date) AS interval,
+            AVG(ws) AS avg_ws,
+            AVG(power) AS avg_power,
+            AVG(temperature) AS avg_temperature,
+            MIN(date) AS min_date
+        FROM 
+            {MystromResult._meta.db_table}
+        WHERE 
+            device_id = %s AND
+            date BETWEEN %s AND %s
+        GROUP BY 
+            interval
+        ORDER BY 
+            interval;
+    """
+
+    query_total_power = """
+        WITH interval_data AS (
             SELECT 
-                time_bucket('15 minutes', date) AS interval,
-                AVG(ws) AS avg_ws,
-                AVG(power) AS avg_power,
-                AVG(temperature) AS avg_temperature,
-                MIN(date) AS min_date
+                date,
+                power,
+                device_id
             FROM 
-                {MystromResult._meta.db_table}
+                {table_name}
             WHERE 
                 device_id = %s AND 
                 date BETWEEN %s AND %s
-            GROUP BY 
-                interval, device_id
-            ORDER BY 
-                interval, device_id;
-        """
-
-    query_total_power = f"""
-            WITH hourly_totals AS (
-                SELECT 
-                    time_bucket('1 hour', date) AS interval,
-                    AVG(power) AS total_power_per_hour
-                FROM 
-                    {MystromResult._meta.db_table}
-                WHERE 
-                    device_id = %s AND 
-                    date BETWEEN %s AND %s
-                GROUP BY 
-                    interval
-            )
+        ),
+        hourly_totals AS (
             SELECT 
-                SUM(total_power_per_hour) AS total_power_wh
+                time_bucket('1 hour', date) AS interval,
+                AVG(power) AS total_power_per_hour
             FROM 
-                hourly_totals;
-        """
-
-    params = [device.id, start_param, end_param]
+                interval_data
+            GROUP BY 
+                interval
+        ),
+        min_max_dates AS (
+            SELECT 
+                MIN(date) AS min_date,
+                MAX(date) AS max_date
+            FROM 
+                interval_data
+        )
+        SELECT 
+            SUM(
+                CASE 
+                    WHEN interval = time_bucket('1 hour', (SELECT min_date FROM min_max_dates)) 
+                    THEN total_power_per_hour * (1 - (EXTRACT(epoch FROM age((SELECT min_date FROM min_max_dates), date_trunc('hour', (SELECT min_date FROM min_max_dates)))) / 3600.0))
+                    WHEN interval = time_bucket('1 hour', (SELECT max_date FROM min_max_dates)) 
+                    THEN total_power_per_hour * (EXTRACT(epoch FROM age(date_trunc('hour', (SELECT max_date FROM min_max_dates)), (SELECT max_date FROM min_max_dates))) / 3600.0)
+                    ELSE total_power_per_hour
+                END
+            ) AS total_power_wh
+        FROM 
+            hourly_totals;
+    """.format(table_name=MystromResult._meta.db_table)
 
     # Execute the query
     with connection.cursor() as cursor:
-        # Execute the 15-minute interval query
+        # Execute the interval query
+        params = [device.id, start_param, end_param]
         cursor.execute(query_15min, params)
         rows_15min = cursor.fetchall()
 
+        params = (device.id, start_param, end_param)
         cursor.execute(query_total_power, params)
         total_power_wh = cursor.fetchone()[0]
 

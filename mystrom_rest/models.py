@@ -1,8 +1,12 @@
 from django.db import models, transaction
 from cpkmodel import CPkModel
 from django.core.validators import RegexValidator
+from django.utils import timezone
 import requests
 import json
+
+import logging
+logger = logging.getLogger("MyStromRest Models")
 
 class MystromDevice(models.Model):
 
@@ -41,7 +45,10 @@ class MystromDevice(models.Model):
             print(f'Request to device {self.name} with ip address {self.ip} returns invalid JSON response.')
             return
 
-        result = MystromResult(device=self, power=response["power"], ws=response["Ws"], relay=1 if response["relay"] else 0, temperature=response["temperature"])
+        # set date to now with timestamp
+        result = MystromResult(device=self, date=timezone.now(), power=response["power"], ws=response["Ws"], relay=1 if response["relay"] else 0, temperature=response["temperature"])
+        logger.debug(f'Saving result for device {self.name} with ip address {self.ip}.')
+        logger.debug(result)
         result.save()
         return result
 
