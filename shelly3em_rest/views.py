@@ -1,16 +1,22 @@
 from django.shortcuts import get_object_or_404
 from django.http.response import JsonResponse
 from django.utils import timezone
+from dateutil import parser
+from datetime import timedelta
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from django.db.models import Avg, Sum, Case, When, FloatField
-from django.db.models.functions import TruncHour
+from django.db import connection
 
-from .models import Shelly3EMDevice, Shelly3EMResult
+from .models import Shelly3EMDevice, Shelly3EMResult, Shelly3EMEmeterResult
 from .serializers import Shelly3EMDeviceSerializer, Shelly3EMResultSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("Shelly3EMRest")
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -60,63 +66,169 @@ def device_detail(request, id):
 @api_view(['GET'])
 def device_results(request, id):
     device = get_object_or_404(Shelly3EMDevice, id=id)
-
-    start_param = request.GET.get(
-        'start', timezone.now() + timezone.timedelta(days=-1))
-    end_param = request.GET.get('end', timezone.now())
-
-    results = Shelly3EMResult.objects.filter(
-        device_id=device, date__range=[start_param, end_param]).order_by('date').prefetch_related('emeters')
-
-    average_power = (
-        results
-        .annotate(hour=TruncHour('date'))
-        .values('hour')
-        .annotate(average_power=Avg('total_power'))
-        .annotate(average_power_returned=Avg(Case(
-            When(total_power__gt=0, then=0),
-            default='total_power',
-            output_field=FloatField(),
-        )))
-    )
-
-    total_power = 0    
-    total_returned_power = 0
     
-    if average_power.exists():
+    start_param = request.GET.get("start")
+    end_param = request.GET.get("end")
 
-        # reduce power average based on if first or last hour is not complete
-        first_hour = average_power.first()['hour']
-        first_hour_results = results.filter(
-            date__range=[first_hour, first_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
-        first_hour_percent = (first_hour_results.first()['date'] - first_hour) / timezone.timedelta(hours=1)
-        first_hour_power_reduction = average_power.first()['average_power'] * first_hour_percent
-        first_hour_power_returned_reduction = average_power.first()['average_power_returned'] * first_hour_percent
+    # Use dateutil parser to handle different formats
+    start_param = parser.parse(start_param)
+    end_param = parser.parse(end_param)
 
+    # Ensure dates are timezone-aware
+    if start_param.tzinfo is None:
+        start_param = timezone.make_aware(start_param)
+    if end_param.tzinfo is None:
+        end_param = timezone.make_aware(end_param)
 
-        last_hour = average_power.last()['hour']
-        last_hour_results = results.filter(
-            date__range=[last_hour, last_hour + timezone.timedelta(hours=1)]).values('date').order_by('date')
-        last_hour_percent = ((last_hour + timezone.timedelta(hours=1)) - last_hour_results.last()['date']) / timezone.timedelta(hours=1)
-        last_hour_power_reduction = average_power.last()['average_power'] * last_hour_percent
-        last_hour_power_returned_reduction = average_power.last()['average_power_returned'] * last_hour_percent
+    logger.debug(f"Request for device {device.id} from {start_param} to {end_param}")
 
+    # Determine interval length based on date range
+    interval_length = 5 if (end_param - start_param).days <= 7 else 15
 
-        total_power = average_power.aggregate(Sum('average_power'))[
-            'average_power__sum'] - first_hour_power_reduction - last_hour_power_reduction
-        total_returned_power = average_power.aggregate(Sum('average_power_returned'))[
-            'average_power_returned__sum'] - first_hour_power_returned_reduction - last_hour_power_returned_reduction
+    query_results = """
+        SELECT 
+            time_bucket('{interval_length} minutes', date) AS interval,
+            AVG(total_power) AS avg_total_power,
+            MIN(date) AS min_date
+        FROM 
+            {table_name}
+        WHERE 
+            device_id = %s AND
+            date BETWEEN %s AND %s
+        GROUP BY 
+            interval
+        ORDER BY 
+            interval;
+    """.format(table_name=Shelly3EMResult._meta.db_table, interval_length=interval_length)
 
-    if request.method == 'GET':
-        result_serializer = Shelly3EMResultSerializer(results, many=True)
+    query_emeter_results = """
+        SELECT 
+            time_bucket('{interval_length} minutes', r.date) AS interval,
+            er.emeter_id,
+            AVG(er.power) AS avg_power,
+            AVG(er.pf) AS avg_pf,
+            AVG(er.current) AS avg_current,
+            AVG(er.voltage) AS avg_voltage,
+            AVG(er.total) AS avg_total,
+            AVG(er.total_returned) AS avg_total_returned
+        FROM 
+            {result_table_name} AS r
+        JOIN
+            {emeter_result_table_name} AS er
+        ON 
+            r.device_id = er.device_id AND r.date = er.date
+        WHERE 
+            r.device_id = %s AND
+            r.date BETWEEN %s AND %s
+        GROUP BY 
+            interval, er.emeter_id
+        ORDER BY 
+            interval, er.emeter_id;
+    """.format(result_table_name=Shelly3EMResult._meta.db_table, emeter_result_table_name=Shelly3EMEmeterResult._meta.db_table, interval_length=interval_length)
+
+    query_total_power = """
+        WITH interval_data AS (
+            SELECT 
+                date,
+                total_power,
+                LEAST(total_power, 0) AS total_power_returned,
+                device_id
+            FROM 
+                {table_name}
+            WHERE 
+                device_id = %s AND 
+                date BETWEEN %s AND %s
+        ),
+        hourly_totals AS (
+            SELECT 
+                time_bucket('1 hour', date) AS interval,
+                AVG(total_power) AS total_power_per_hour,
+                AVG(total_power_returned) AS total_power_returned_per_hour
+            FROM 
+                interval_data
+            GROUP BY 
+                interval
+        ),
+        min_max_dates AS (
+            SELECT 
+                MIN(date) AS min_date,
+                MAX(date) AS max_date
+            FROM 
+                interval_data
+        )
+        SELECT 
+            SUM(
+                CASE 
+                    WHEN interval = time_bucket('1 hour', (SELECT min_date FROM min_max_dates)) 
+                    THEN total_power_per_hour * (1 - (EXTRACT(epoch FROM age((SELECT min_date FROM min_max_dates), date_trunc('hour', (SELECT min_date FROM min_max_dates)))) / 3600.0))
+                    WHEN interval = time_bucket('1 hour', (SELECT max_date FROM min_max_dates)) 
+                    THEN total_power_per_hour * (EXTRACT(epoch FROM age(date_trunc('hour', (SELECT max_date FROM min_max_dates)), (SELECT max_date FROM min_max_dates))) / 3600.0)
+                    ELSE total_power_per_hour
+                END
+            ) AS total_power_wh,
+            SUM(
+                CASE
+                    WHEN interval = time_bucket('1 hour', (SELECT min_date FROM min_max_dates))
+                    THEN total_power_returned_per_hour * (1 - (EXTRACT(epoch FROM age((SELECT min_date FROM min_max_dates), date_trunc('hour', (SELECT min_date FROM min_max_dates)))) / 3600.0))
+                    WHEN interval = time_bucket('1 hour', (SELECT max_date FROM min_max_dates))
+                    THEN total_power_returned_per_hour * (EXTRACT(epoch FROM age(date_trunc('hour', (SELECT max_date FROM min_max_dates)), (SELECT max_date FROM min_max_dates))) / 3600.0)
+                    ELSE total_power_returned_per_hour
+                END
+            ) AS total_power_returned_wh
+        FROM 
+            hourly_totals;
+    """.format(table_name=Shelly3EMResult._meta.db_table)
+
+    
+    with connection.cursor() as cursor:
+        params = [device.id, start_param, end_param]
+        cursor.execute(query_results, params)
+        rows_15min = cursor.fetchall()
         
-        if request.META.get('HTTP_ACCEPT') == 'text/csv':
-            result_data = result_serializer.data
-        else:
-            result_data = {'results': result_serializer.data,
-                           'total_power': total_power,
-                           'total_returned_power': total_returned_power, }
+        primary_results = [
+            {
+                "interval": interval,
+                "total_power": total_power,
+                "date": date,
+            }
+            for (interval, total_power, date) in rows_15min
+        ]
 
+        # Create a dictionary to store emeter results by interval
+        emeter_results_by_interval = {}
+        
+        cursor.execute(query_emeter_results, params)
+        emeter_rows = cursor.fetchall()
+        
+        for row in emeter_rows:
+            interval, emeter_id, avg_power, avg_pf, avg_current, avg_voltage, avg_total, avg_total_returned = row
+            if interval not in emeter_results_by_interval:
+                emeter_results_by_interval[interval] = []
+            emeter_results_by_interval[interval].append({
+                "emeter_id": emeter_id,
+                "power": avg_power,
+                "pf": avg_pf,
+                "current": avg_current,
+                "voltage": avg_voltage,
+                "total": avg_total,
+                "total_returned": avg_total_returned,
+            })
+
+        # Combine primary results with emeter results
+        results_15min = []
+        for result in primary_results:
+            interval = result["interval"]
+            result["emeters"] = emeter_results_by_interval.get(interval, [])
+            results_15min.append(result)
+
+
+        cursor.execute(query_total_power, (device.id, start_param, end_param))
+        total_power, total_power_returned = cursor.fetchone()
+        
+        if request.META.get("HTTP_ACCEPT") == "text/csv":
+            result_data = results_15min
+        else:
+            result_data = {"results": results_15min, "total_power": total_power, "total_returned_power": total_power_returned}
 
         return Response(result_data)
 

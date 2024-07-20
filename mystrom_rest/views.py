@@ -102,7 +102,7 @@ def device_results(request, id):
     # Determine interval length based on date range
     interval_length = 5 if (end_param - start_param).days <= 7 else 15
 
-    query_15min = f"""
+    query_results = """
         SELECT 
             time_bucket('{interval_length} minutes', date) AS interval,
             AVG(ws) AS avg_ws,
@@ -110,7 +110,7 @@ def device_results(request, id):
             AVG(temperature) AS avg_temperature,
             MIN(date) AS min_date
         FROM 
-            {MystromResult._meta.db_table}
+            {table_name}
         WHERE 
             device_id = %s AND
             date BETWEEN %s AND %s
@@ -118,7 +118,7 @@ def device_results(request, id):
             interval
         ORDER BY 
             interval;
-    """
+    """.format(table_name=MystromResult._meta.db_table, interval_length=interval_length)
 
     query_total_power = """
         WITH interval_data AS (
@@ -165,23 +165,21 @@ def device_results(request, id):
     # Execute the query
     with connection.cursor() as cursor:
         # Execute the interval query
-        params = [device.id, start_param, end_param]
-        cursor.execute(query_15min, params)
+        cursor.execute(query_results, (device.id, start_param, end_param))
         rows_15min = cursor.fetchall()
 
-        params = (device.id, start_param, end_param)
-        cursor.execute(query_total_power, params)
+        cursor.execute(query_total_power, (device.id, start_param, end_param))
         total_power_wh = cursor.fetchone()[0]
 
         results_15min = [
             {
-                "interval": row[0],
-                "ws": row[1],
-                "power": row[2],
-                "temperature": row[3],
-                "date": row[4],
+                "interval": interval,
+                "ws": ws,
+                "power": power,
+                "temperature": temperature,
+                "date": date,
             }
-            for row in rows_15min
+            for (interval, ws, power, temperature, date) in rows_15min
         ]
 
         if request.META.get("HTTP_ACCEPT") == "text/csv":
