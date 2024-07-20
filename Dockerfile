@@ -24,6 +24,7 @@ RUN apk add --no-cache mariadb-connector-c libpq
 
 COPY . .
 
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind=0.0.0.0:8000 --timeout 300 --workers=3 --threads=3 --max-requests 5 --max-requests-jitter 2 pim.wsgi:application"]
+
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind=0.0.0.0:8000 --timeout 300 --workers=3 --threads=3 --max-requests 20 --max-requests-jitter 5 pim.wsgi:application"]
 
 EXPOSE 8000/tcp
