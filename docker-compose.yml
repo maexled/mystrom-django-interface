@@ -2,8 +2,8 @@
 services:
   interface:
     container_name: interface
-    # image: ghcr.io/maexled/mystrom-django-interface:master
-    build: .
+    image: ghcr.io/maexled/mystrom-django-interface:master
+    # build: .
     privileged: true
     restart: always
     ports:
