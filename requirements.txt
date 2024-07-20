@@ -5,9 +5,9 @@ djangorestframework-csv==3.0.2
 django-cors-headers==4.4.0
 django-debug-toolbar==4.3.0
 whitenoise==6.6.0
-mysqlclient==2.2.4
 psycopg2==2.9.9
 requests==2.32.3
+django-compositepk-model==1.0.3
 
 ## for testing
 beautifulsoup4==4.12.2

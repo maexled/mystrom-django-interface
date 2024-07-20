@@ -1,4 +1,5 @@
 from django.db import models, transaction
+from cpkmodel import CPkModel
 from django.core.validators import RegexValidator
 import requests
 import json
@@ -47,21 +48,21 @@ class MystromDevice(models.Model):
     class Meta:
         db_table = 'devices'
 
-class MystromResult(models.Model):
+class MystromResult(CPkModel):
 
-    id = models.AutoField(primary_key=True)
-
-    device = models.ForeignKey(MystromDevice, on_delete=models.PROTECT)
+    date = models.DateTimeField(auto_now_add=True, primary_key=True)
+    device = models.ForeignKey(MystromDevice, on_delete=models.PROTECT, primary_key=True)
 
     power = models.FloatField()
     ws = models.FloatField()
     relay = models.IntegerField()
     temperature = models.FloatField()
-    date = models.DateTimeField(auto_now_add=True)
 
     def __repr__(self):
         return "<Result(deivce_id='%s', power='%s', ws='%s', relay='%s', temperature='%s', date='%s')>" % (
                 self.device_id, self.power, self.ws, self.relay, self.temperature, self.date)
 
     class Meta:
+        managed = False  # for CompositePK *1
         db_table = 'results'
+        unique_together = (('device', 'date'),)  # for CompositePK
