@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev mariadb-connector-c-dev libpq-dev
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev libpq-dev
 
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir gunicorn && \
