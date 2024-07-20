@@ -34,12 +34,12 @@ class MystromResultsTest(APITestCase):
     average_power = 0
 
     def setUp(self):
-        device = MystromDevice.objects.create(name="NewDevice", ip="localhost")
+        self.device = MystromDevice.objects.create(name="NewDevice", ip="localhost")
 
         for i in range(self.amount_of_results):
             power = 500
             result = MystromResult(
-                device=device,
+                device=self.device,
                 power=power,
                 ws=power,
                 relay=1,
@@ -59,6 +59,6 @@ class MystromResultsTest(APITestCase):
         start_param = "2023-05-12T22:00:00.835Z"
         end_param = "2023-05-15T22:00:00.835Z"
 
-        url = f"{reverse('rest_device_results', kwargs={'id': 1})}?minimize=false&start={start_param}&end={end_param}"
+        url = f"{reverse('rest_device_results', kwargs={'id': self.device.id})}?start={start_param}&end={end_param}"
         response = self.client.get(url, format="json")
         self.assertEqual(len(response.json().get("results")), 0)
