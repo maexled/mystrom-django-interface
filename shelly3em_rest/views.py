@@ -19,54 +19,64 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("Shelly3EMRest")
 
 
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(["GET", "POST", "DELETE"])
 def device_list(request):
-    if request.method == 'GET':
+    if request.method == "GET":
         devices = Shelly3EMDevice.objects.all()
 
         devices_serializer = Shelly3EMDeviceSerializer(devices, many=True)
         return JsonResponse(devices_serializer.data, safe=False)
         # 'safe=False' for objects serialization
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         device_data = JSONParser().parse(request)
         device_serializer = Shelly3EMDeviceSerializer(data=device_data)
         if device_serializer.is_valid():
             device_serializer.save()
 
             return JsonResponse(device_serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(device_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse(
+            device_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
 
-    elif request.method == 'DELETE':
+    elif request.method == "DELETE":
         count = Shelly3EMDevice.objects.all().delete()
-        return JsonResponse({'message': '{} Devices were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(
+            {"message": "{} Devices were deleted successfully!".format(count[0])},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(["GET", "PUT", "DELETE"])
 def device_detail(request, id):
     device = get_object_or_404(Shelly3EMDevice, id=id)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         device_serializer = Shelly3EMDeviceSerializer(device)
         return JsonResponse(device_serializer.data)
 
-    elif request.method == 'PUT':
+    elif request.method == "PUT":
         device_data = JSONParser().parse(request)
         device_serializer = Shelly3EMDeviceSerializer(device, data=device_data)
         if device_serializer.is_valid():
             device_serializer.save()
             return JsonResponse(device_serializer.data)
-        return JsonResponse(device_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse(
+            device_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
 
-    elif request.method == 'DELETE':
+    elif request.method == "DELETE":
         device.delete()
-        return JsonResponse({'message': 'Device was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(
+            {"message": "Device was deleted successfully!"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def device_results(request, id):
     device = get_object_or_404(Shelly3EMDevice, id=id)
-    
+
     start_param = request.GET.get("start")
     end_param = request.GET.get("end")
 
@@ -99,7 +109,9 @@ def device_results(request, id):
             interval
         ORDER BY 
             interval;
-    """.format(table_name=Shelly3EMResult._meta.db_table, interval_length=interval_length)
+    """.format(
+        table_name=Shelly3EMResult._meta.db_table, interval_length=interval_length
+    )
 
     query_emeter_results = """
         SELECT 
@@ -124,7 +136,11 @@ def device_results(request, id):
             interval, er.emeter_id
         ORDER BY 
             interval, er.emeter_id;
-    """.format(result_table_name=Shelly3EMResult._meta.db_table, emeter_result_table_name=Shelly3EMEmeterResult._meta.db_table, interval_length=interval_length)
+    """.format(
+        result_table_name=Shelly3EMResult._meta.db_table,
+        emeter_result_table_name=Shelly3EMEmeterResult._meta.db_table,
+        interval_length=interval_length,
+    )
 
     query_total_power = """
         WITH interval_data AS (
@@ -179,12 +195,11 @@ def device_results(request, id):
             hourly_totals;
     """.format(table_name=Shelly3EMResult._meta.db_table)
 
-    
     with connection.cursor() as cursor:
         params = [device.id, start_param, end_param]
         cursor.execute(query_results, params)
         rows_15min = cursor.fetchall()
-        
+
         primary_results = [
             {
                 "interval": interval,
@@ -196,23 +211,34 @@ def device_results(request, id):
 
         # Create a dictionary to store emeter results by interval
         emeter_results_by_interval = {}
-        
+
         cursor.execute(query_emeter_results, params)
         emeter_rows = cursor.fetchall()
-        
+
         for row in emeter_rows:
-            interval, emeter_id, avg_power, avg_pf, avg_current, avg_voltage, avg_total, avg_total_returned = row
+            (
+                interval,
+                emeter_id,
+                avg_power,
+                avg_pf,
+                avg_current,
+                avg_voltage,
+                avg_total,
+                avg_total_returned,
+            ) = row
             if interval not in emeter_results_by_interval:
                 emeter_results_by_interval[interval] = []
-            emeter_results_by_interval[interval].append({
-                "emeter_id": emeter_id,
-                "power": avg_power,
-                "pf": avg_pf,
-                "current": avg_current,
-                "voltage": avg_voltage,
-                "total": avg_total,
-                "total_returned": avg_total_returned,
-            })
+            emeter_results_by_interval[interval].append(
+                {
+                    "emeter_id": emeter_id,
+                    "power": avg_power,
+                    "pf": avg_pf,
+                    "current": avg_current,
+                    "voltage": avg_voltage,
+                    "total": avg_total,
+                    "total_returned": avg_total_returned,
+                }
+            )
 
         # Combine primary results with emeter results
         results_15min = []
@@ -221,22 +247,24 @@ def device_results(request, id):
             result["emeters"] = emeter_results_by_interval.get(interval, [])
             results_15min.append(result)
 
-
         cursor.execute(query_total_power, (device.id, start_param, end_param))
         total_power, total_power_returned = cursor.fetchone()
-        
+
         if request.META.get("HTTP_ACCEPT") == "text/csv":
             result_data = results_15min
         else:
-            result_data = {"results": results_15min, "total_power": total_power, "total_returned_power": total_power_returned}
+            result_data = {
+                "results": results_15min,
+                "total_power": total_power,
+                "total_returned_power": total_power_returned,
+            }
 
         return Response(result_data)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def get_and_save_device_results(request):
-
-    if request.method == 'POST':
+    if request.method == "POST":
         devices = Shelly3EMDevice.objects.filter(active=True).all()
         results = []
         for device in devices:
@@ -244,4 +272,6 @@ def get_and_save_device_results(request):
             results.append(result)
         result_serializer = Shelly3EMResultSerializer(results, many=True)
 
-        return JsonResponse(result_serializer.data, safe=False, status=status.HTTP_200_OK)
+        return JsonResponse(
+            result_serializer.data, safe=False, status=status.HTTP_200_OK
+        )

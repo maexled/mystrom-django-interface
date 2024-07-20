@@ -6,52 +6,73 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Shelly3EMDevice',
+            name="Shelly3EMDevice",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=16)),
-                ('active', models.BooleanField(default=True)),
-                ('ip', models.CharField(max_length=16, validators=[django.core.validators.RegexValidator(message='Not valid IP Address', regex='^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$')])),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=16)),
+                ("active", models.BooleanField(default=True)),
+                (
+                    "ip",
+                    models.CharField(
+                        max_length=16,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Not valid IP Address",
+                                regex="^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+                            )
+                        ],
+                    ),
+                ),
             ],
             options={
-                'db_table': 'shelly3em_devices',
+                "db_table": "shelly3em_devices",
             },
         ),
         migrations.CreateModel(
-            name='Shelly3EMResult',
+            name="Shelly3EMResult",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('total_power', models.FloatField()),
-                ('date', models.DateTimeField(auto_now_add=True)),
-                ('device', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='shelly3em_rest.shelly3emdevice')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("total_power", models.FloatField()),
+                ("date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "device",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="shelly3em_rest.shelly3emdevice",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'shelly3em_results',
+                "db_table": "shelly3em_results",
             },
         ),
         migrations.CreateModel(
-            name='Shelly3EMEmeterResult',
+            name="Shelly3EMEmeterResult",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('emeter_id', models.IntegerField()),
-                ('power', models.FloatField()),
-                ('pf', models.FloatField()),
-                ('current', models.FloatField()),
-                ('voltage', models.FloatField()),
-                ('total', models.FloatField()),
-                ('total_returned', models.FloatField()),
-                ('result', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='shelly3em_rest.shelly3emresult')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("emeter_id", models.IntegerField()),
+                ("power", models.FloatField()),
+                ("pf", models.FloatField()),
+                ("current", models.FloatField()),
+                ("voltage", models.FloatField()),
+                ("total", models.FloatField()),
+                ("total_returned", models.FloatField()),
+                (
+                    "result",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="shelly3em_rest.shelly3emresult",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'shelly3em_emeter_results',
+                "db_table": "shelly3em_emeter_results",
             },
         ),
     ]

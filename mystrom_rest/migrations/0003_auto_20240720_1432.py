@@ -41,13 +41,14 @@ def forwards(apps, schema_editor):
             SELECT create_hypertable('results', 'date', migrate_data => true)
         """)
 
+
 def backwards(apps, schema_editor):
     pass
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
-        ('mystrom_rest', '0002_mystromdevice_active'),
+        ("mystrom_rest", "0002_mystromdevice_active"),
     ]
 
     operations = [

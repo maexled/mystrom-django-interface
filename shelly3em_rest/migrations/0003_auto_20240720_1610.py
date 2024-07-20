@@ -74,15 +74,14 @@ def forwards(apps, schema_editor):
             SELECT create_hypertable('shelly3em_emeter_results', 'date', migrate_data => true)
         """)
 
+
 def backwards(apps, schema_editor):
     pass
 
+
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('shelly3em_rest', '0002_alter_shelly3ememeterresult_result'),
+        ("shelly3em_rest", "0002_alter_shelly3ememeterresult_result"),
     ]
 
-    operations = [
-        migrations.RunPython(forwards, backwards)
-    ]
+    operations = [migrations.RunPython(forwards, backwards)]

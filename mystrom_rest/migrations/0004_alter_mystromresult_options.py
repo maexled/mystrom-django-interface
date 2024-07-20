@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('mystrom_rest', '0003_auto_20240720_1432'),
+        ("mystrom_rest", "0003_auto_20240720_1432"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='mystromresult',
-            options={'managed': False},
+            name="mystromresult",
+            options={"managed": False},
         ),
     ]
