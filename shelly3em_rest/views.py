@@ -146,8 +146,7 @@ def device_results(request, id):
             SELECT 
                 date,
                 total_power,
-                LEAST(total_power, 0) AS total_power_returned,
-                device_id
+                LEAST(total_power, 0) AS total_power_returned
             FROM 
                 {table_name}
             WHERE 
@@ -175,18 +174,18 @@ def device_results(request, id):
             SUM(
                 CASE 
                     WHEN interval = time_bucket('1 hour', (SELECT min_date FROM min_max_dates)) 
-                    THEN total_power_per_hour * (1 - (EXTRACT(epoch FROM age((SELECT min_date FROM min_max_dates), date_trunc('hour', (SELECT min_date FROM min_max_dates)))) / 3600.0))
+                    THEN total_power_per_hour * (1 - (EXTRACT(epoch FROM (SELECT min_date FROM min_max_dates) - date_trunc('hour', (SELECT min_date FROM min_max_dates))) / 3600.0))
                     WHEN interval = time_bucket('1 hour', (SELECT max_date FROM min_max_dates)) 
-                    THEN total_power_per_hour * (EXTRACT(epoch FROM age(date_trunc('hour', (SELECT max_date FROM min_max_dates)), (SELECT max_date FROM min_max_dates))) / 3600.0)
+                    THEN total_power_per_hour * (EXTRACT(epoch FROM (SELECT max_date FROM min_max_dates) - date_trunc('hour', (SELECT max_date FROM min_max_dates))) / 3600.0)
                     ELSE total_power_per_hour
                 END
             ) AS total_power_wh,
             SUM(
                 CASE
                     WHEN interval = time_bucket('1 hour', (SELECT min_date FROM min_max_dates))
-                    THEN total_power_returned_per_hour * (1 - (EXTRACT(epoch FROM age((SELECT min_date FROM min_max_dates), date_trunc('hour', (SELECT min_date FROM min_max_dates)))) / 3600.0))
+                    THEN total_power_returned_per_hour * (1 - (EXTRACT(epoch FROM (SELECT min_date FROM min_max_dates) - date_trunc('hour', (SELECT min_date FROM min_max_dates))) / 3600.0))
                     WHEN interval = time_bucket('1 hour', (SELECT max_date FROM min_max_dates))
-                    THEN total_power_returned_per_hour * (EXTRACT(epoch FROM age(date_trunc('hour', (SELECT max_date FROM min_max_dates)), (SELECT max_date FROM min_max_dates))) / 3600.0)
+                    THEN total_power_returned_per_hour * (EXTRACT(epoch FROM (SELECT max_date FROM min_max_dates) - date_trunc('hour', (SELECT max_date FROM min_max_dates))) / 3600.0)
                     ELSE total_power_returned_per_hour
                 END
             ) AS total_power_returned_wh
