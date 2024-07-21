@@ -33,21 +33,21 @@ class MystromDevice(models.Model):
         try:
             response = requests.get(f"http://{self.ip}/report")
         except requests.exceptions.ConnectionError as e:
-            print(
+            logger.error(
                 f"Device {self.name} with ip address {self.ip} seems to be not reachable."
             )
             return
         except requests.exceptions.Timeout as e:
-            print(f"Request to device {self.name} with ip address {self.ip} timed out.")
+            logger.error(f"Request to device {self.name} with ip address {self.ip} timed out.")
             return
         except requests.exceptions.RequestException as e:
-            print(f"Request to device {self.name} with ip address {self.ip} failed.")
+            logger.error(f"Request to device {self.name} with ip address {self.ip} failed.")
             return
 
         try:
             response = json.loads(response.text)
         except json.decoder.JSONDecodeError:
-            print(
+            logger.error(
                 f"Request to device {self.name} with ip address {self.ip} returns invalid JSON response."
             )
             return
