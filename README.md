@@ -2,6 +2,9 @@
 
 The Django application is designed to allow users to view power usage charts for MyStrom and Shelly3EM devices. The application collects the current power usage data every 60 seconds, which is then used to calculate and present power usage charts to the user.
 
+This project uses [TimeScaleDB](https://www.timescale.com/) as database. 
+The database is optimized for time-series data and this project uses queries which are only compatible with TimeScaleDB.
+
 There are two main views: the Device view and the Result view. Here's what each view looks like:
 
 #### Device View
@@ -37,7 +40,6 @@ pip install -r requirements.txt
 
 Here's a breakdown of all the environment variables that are being used in the Django application:
 
-- `ENGINE_TYPE`: Specifies the type of database engine to use, either `mysql` or `postgresql`.
 - `DB_NAME`: Specifies the name of the database to use.
 - `DB_USER`: Specifies the username to use when connecting to the database.
 - `DB_PASSWORD`: Specifies the password to use when connecting to the database.
@@ -87,7 +89,6 @@ Static files are served with WhiteNoise.
 docker run \
    --name mystrom-interface \
    -p 8000:8000 \
-   -e ENGINE_TYPE={mysql/postgresql}
    -e DB_NAME=db-name \
    -e DB_USER=username \
    -e DB_PASSWORD=password \
@@ -107,7 +108,3 @@ Make sure to replace the content in `{...}` with your variable of your choice.
 ```sh
 docker compose up
 ```
-
-## Configurations
-### Important things to know
-Database configuraton in `pim/settings.py` under `DATABASES`

@@ -1,14 +1,36 @@
+
 services:
   interface:
     container_name: interface
     image: ghcr.io/maexled/mystrom-django-interface:master
-#   build: .
+    # build: .
     privileged: true
     restart: always
     ports:
       - "80:8000"
     env_file:
       - .env
+    depends_on:
+      - timescaledb
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - timescaledb
 
   requester:
     container_name: interface-requester
