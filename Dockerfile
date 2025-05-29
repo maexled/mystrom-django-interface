@@ -20,7 +20,7 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 COPY --from=builder /app /app
 
-RUN apk add --no-cache mariadb-connector-c libpq
+RUN apk add --no-cache libpq
 
 COPY . .
 
