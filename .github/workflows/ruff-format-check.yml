@@ -1,0 +1,31 @@
+name: Ruff Format Check
+
+on:
+  push:
+    paths:
+      - '**.py'
+  pull_request:
+    paths:
+      - '**.py'
+
+jobs:
+  ruff-format:
+    name: Check code formatting with Ruff
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Ruff
+        run: |
+          pip install ruff
+
+      - name: Run ruff format check
+        run: |
+          ruff format --check .
