@@ -1,6 +1,5 @@
 from django.db import models, transaction
-from cpkmodel import CPkModel
-from compositefk.fields import CompositeForeignKey
+from django.db.models.fields.composite import CompositePrimaryKey
 from django.core.validators import RegexValidator
 from django.utils import timezone
 import requests
@@ -33,16 +32,20 @@ class Shelly3EMDevice(models.Model):
     def get_and_save_result(self):
         try:
             response = requests.get(f"http://{self.ip}/status")
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             logger.error(
                 f"Device {self.name} with ip address {self.ip} seems to be not reachable."
             )
             return
-        except requests.exceptions.Timeout as e:
-            logger.error(f"Request to device {self.name} with ip address {self.ip} timed out.")
+        except requests.exceptions.Timeout:
+            logger.error(
+                f"Request to device {self.name} with ip address {self.ip} timed out."
+            )
             return
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request to device {self.name} with ip address {self.ip} failed.")
+        except requests.exceptions.RequestException:
+            logger.error(
+                f"Request to device {self.name} with ip address {self.ip} failed."
+            )
             return
 
         try:
@@ -84,40 +87,31 @@ class Shelly3EMDevice(models.Model):
         db_table = "shelly3em_devices"
 
 
-class Shelly3EMResult(CPkModel):
-    date = models.DateTimeField(auto_now_add=True, primary_key=True)
-    device = models.ForeignKey(
-        Shelly3EMDevice, on_delete=models.PROTECT, primary_key=True
-    )
+class Shelly3EMResult(models.Model):
+    pk = CompositePrimaryKey("device_id", "date")
+    date = models.DateTimeField(auto_now_add=True)
+    device = models.ForeignKey(Shelly3EMDevice, on_delete=models.PROTECT)
 
     total_power = models.FloatField()
 
     def __repr__(self):
-        return "<Result(deivce_id='%s', total_power='%s', date='%s')>" % (
+        return "<Result(device_id='%s', total_power='%s', date='%s')>" % (
             self.device_id,
             self.total_power,
             self.date,
         )
 
     class Meta:
-        managed = False  # for CompositePK *1
         db_table = "shelly3em_results"
-        unique_together = (("device", "date"),)  # for CompositePK
+        managed = False
 
 
-class Shelly3EMEmeterResult(CPkModel):
-    date = models.DateTimeField(primary_key=True)
-    device = models.ForeignKey(
-        Shelly3EMDevice, on_delete=models.PROTECT, primary_key=True
-    )
-    emeter_id = models.IntegerField(primary_key=True)
+class Shelly3EMEmeterResult(models.Model):
+    pk = CompositePrimaryKey("device_id", "date", "emeter_id")
+    date = models.DateTimeField()
+    device = models.ForeignKey(Shelly3EMDevice, on_delete=models.PROTECT)
 
-    emeters = CompositeForeignKey(
-        Shelly3EMResult,
-        on_delete=models.PROTECT,
-        related_name="emeters",
-        to_fields={"device": "device", "date": "date"},
-    )
+    emeter_id = models.IntegerField()
 
     power = models.FloatField()
     pf = models.FloatField()
@@ -143,6 +137,5 @@ class Shelly3EMEmeterResult(CPkModel):
         )
 
     class Meta:
-        managed = False  # for CompositePK *1
         db_table = "shelly3em_emeter_results"
-        unique_together = (("device", "date", "emeter_id"),)  # for CompositePK
+        managed = False

@@ -35,7 +35,8 @@ services:
   requester:
     container_name: interface-requester
     image: curlimages/curl:7.80.0
-    command: ["sh", "-c", "while true; do sleep 60; curl -X POST http://interface:8000/shelly-api/devices/request-and-save-results >/dev/null 2>&1 & curl -X POST http://interface:8000/api/devices/request-and-save-results >/dev/null 2>&1; done"]    
+    command: ["sh", "-c", "while true; do sleep 60; curl -fsS -X POST http://interface:8000/shelly-api/devices/request-and-save-results && curl -fsS -X POST http://interface:8000/api/devices/request-and-save-results; done"]
     depends_on:
       - interface
+    
 

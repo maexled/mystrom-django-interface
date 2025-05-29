@@ -166,9 +166,6 @@ def device_results(request, id):
         cursor.execute(query_results, (device.id, start_param, end_param))
         rows_15min = cursor.fetchall()
 
-        cursor.execute(query_total_power, (device.id, start_param, end_param))
-        total_power_wh = cursor.fetchone()[0]
-
         results_15min = [
             {
                 "interval": interval,
@@ -183,10 +180,12 @@ def device_results(request, id):
         if request.META.get("HTTP_ACCEPT") == "text/csv":
             result_data = results_15min
         else:
+            cursor.execute(query_total_power, (device.id, start_param, end_param))
+            total_power_wh = cursor.fetchone()[0]
             result_data = {"results": results_15min, "total_power": total_power_wh}
 
         end_time = timezone.now()
-        logging.debug("Request took: " + str(end_time - start_time))
+        logger.debug("Request took: " + str(end_time - start_time))
 
         return Response(result_data, status=status.HTTP_200_OK)
 

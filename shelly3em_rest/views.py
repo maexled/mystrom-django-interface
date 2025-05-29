@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from django.http.response import JsonResponse
 from django.utils import timezone
 from dateutil import parser
-from datetime import timedelta
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 

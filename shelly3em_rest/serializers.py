@@ -29,8 +29,8 @@ class Shelly3EMEmeterResultSerializer(serializers.ModelSerializer):
 
 
 class Shelly3EMResultSerializer(serializers.ModelSerializer):
-    emeters = Shelly3EMEmeterResultSerializer(many=True)
+    # TODO: add emeters as a nested serializer in the future
 
     class Meta:
         model = Shelly3EMResult
-        fields = ("emeters", "total_power", "date")
+        fields = ("total_power", "date")

@@ -1,5 +1,5 @@
 from django.db import models, transaction
-from cpkmodel import CPkModel
+from django.db.models.fields.composite import CompositePrimaryKey
 from django.core.validators import RegexValidator
 from django.utils import timezone
 import requests
@@ -32,16 +32,20 @@ class MystromDevice(models.Model):
     def get_and_save_result(self):
         try:
             response = requests.get(f"http://{self.ip}/report")
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             logger.error(
                 f"Device {self.name} with ip address {self.ip} seems to be not reachable."
             )
             return
-        except requests.exceptions.Timeout as e:
-            logger.error(f"Request to device {self.name} with ip address {self.ip} timed out.")
+        except requests.exceptions.Timeout:
+            logger.error(
+                f"Request to device {self.name} with ip address {self.ip} timed out."
+            )
             return
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request to device {self.name} with ip address {self.ip} failed.")
+        except requests.exceptions.RequestException:
+            logger.error(
+                f"Request to device {self.name} with ip address {self.ip} failed."
+            )
             return
 
         try:
@@ -70,11 +74,10 @@ class MystromDevice(models.Model):
         db_table = "devices"
 
 
-class MystromResult(CPkModel):
-    date = models.DateTimeField(auto_now_add=True, primary_key=True)
-    device = models.ForeignKey(
-        MystromDevice, on_delete=models.PROTECT, primary_key=True
-    )
+class MystromResult(models.Model):
+    pk = CompositePrimaryKey("device_id", "date")
+    date = models.DateTimeField(auto_now_add=True)
+    device = models.ForeignKey(MystromDevice, on_delete=models.PROTECT)
 
     power = models.FloatField()
     ws = models.FloatField()
@@ -83,7 +86,7 @@ class MystromResult(CPkModel):
 
     def __repr__(self):
         return (
-            "<Result(deivce_id='%s', power='%s', ws='%s', relay='%s', temperature='%s', date='%s')>"
+            "<Result(device_id='%s', power='%s', ws='%s', relay='%s', temperature='%s', date='%s')>"
             % (
                 self.device_id,
                 self.power,
@@ -95,6 +98,5 @@ class MystromResult(CPkModel):
         )
 
     class Meta:
-        managed = False  # for CompositePK *1
         db_table = "results"
-        unique_together = (("device", "date"),)  # for CompositePK
+        managed = False

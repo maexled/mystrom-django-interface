@@ -1,6 +1,6 @@
 from django.urls import reverse
 from django.test import TestCase
-from mystrom_rest.models import MystromDevice, MystromResult
+from mystrom_rest.models import MystromDevice
 from bs4 import BeautifulSoup
 
 
