@@ -6,37 +6,52 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='MystromDevice',
+            name="MystromDevice",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=16)),
-                ('ip', models.CharField(max_length=16, validators=[django.core.validators.RegexValidator(message='Not valid IP Address', regex='^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$')])),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=16)),
+                (
+                    "ip",
+                    models.CharField(
+                        max_length=16,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Not valid IP Address",
+                                regex="^(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+                            )
+                        ],
+                    ),
+                ),
             ],
             options={
-                'db_table': 'devices',
+                "db_table": "devices",
             },
         ),
         migrations.CreateModel(
-            name='MystromResult',
+            name="MystromResult",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('power', models.FloatField()),
-                ('ws', models.FloatField()),
-                ('relay', models.IntegerField()),
-                ('temperature', models.FloatField()),
-                ('date', models.DateTimeField(auto_now_add=True)),
-                ('device', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='mystrom_rest.mystromdevice')),
+                ("id", models.AutoField(primary_key=True, serialize=False)),
+                ("power", models.FloatField()),
+                ("ws", models.FloatField()),
+                ("relay", models.IntegerField()),
+                ("temperature", models.FloatField()),
+                ("date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "device",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="mystrom_rest.mystromdevice",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'results',
+                "db_table": "results",
             },
         ),
     ]

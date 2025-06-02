@@ -1,19 +1,42 @@
+
 services:
   interface:
     container_name: interface
     image: ghcr.io/maexled/mystrom-django-interface:master
-#   build: .
+    # build: .
     privileged: true
     restart: always
     ports:
       - "80:8000"
     env_file:
       - .env
+    depends_on:
+      - timescaledb
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - timescaledb
 
   requester:
     container_name: interface-requester
     image: curlimages/curl:7.80.0
-    command: ["sh", "-c", "while true; do sleep 60; curl -X POST http://interface:8000/shelly-api/devices/request-and-save-results >/dev/null 2>&1 & curl -X POST http://interface:8000/api/devices/request-and-save-results >/dev/null 2>&1; done"]    
+    command: ["sh", "-c", "while true; do sleep 60; curl -fsS -X POST http://interface:8000/shelly-api/devices/request-and-save-results && curl -fsS -X POST http://interface:8000/api/devices/request-and-save-results; done"]
     depends_on:
       - interface
+    
 

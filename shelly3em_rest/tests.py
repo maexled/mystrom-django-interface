@@ -5,19 +5,14 @@ from rest_framework.test import APIClient
 from .models import Shelly3EMDevice
 from .serializers import Shelly3EMDeviceSerializer
 
+
 class ShellyDeviceTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.url = reverse('shelly_rest_device_index')
-        self.device_data = {
-            'name': 'Test Device',
-            'ip': '192.168.0.74',
-            'active': True
-        }
+        self.url = reverse("shelly_rest_device_index")
+        self.device_data = {"name": "Test Device", "ip": "192.168.0.74", "active": True}
         self.device = Shelly3EMDevice.objects.create(
-            name='Test Device',
-            ip='192.168.0.74',
-            active=True
+            name="Test Device", ip="192.168.0.74", active=True
         )
 
     def test_get_device_list(self):
