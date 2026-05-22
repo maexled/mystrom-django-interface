@@ -16,11 +16,11 @@
   <div class="modal-header">
     {% if device %}
     <h5 class="modal-title">
-      <i class="bi bi-pencil-square me-1"></i>Edit Device
+      <i class="bi bi-pencil-square mr-1"></i>Edit Device
     </h5>
     {% else %}
     <h5 class="modal-title">
-      <i class="bi bi-plus-circle me-1"></i>Add {{ device_type|cut:"Device" }} Device
+      <i class="bi bi-plus-circle mr-1"></i>Add {{ device_type|cut:"Device" }} Device
     </h5>
     {% endif %}
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -36,22 +36,22 @@
       <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger"
         hx-delete="{% url 'shelly_device' id=device.id %}"
         hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
-        <i class="bi bi-trash me-1"></i>Remove
+        <i class="bi bi-trash mr-1"></i>Remove
       </button>
       {% elif modelclass == "MystromDevice" %}
       <button onclick="onDelete()" id="modal-delete" type="button" class="btn btn-danger"
         hx-delete="{% url 'mystrom_device' id=device.id %}"
         hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
-        <i class="bi bi-trash me-1"></i>Remove
+        <i class="bi bi-trash mr-1"></i>Remove
       </button>
       {% endif %}
       <span class="flex-grow-1"></span>
     {% endif %}
     <button type="button" class="btn btn-secondary" data-dismiss="modal">
-      <i class="bi bi-x me-1"></i>Cancel
+      <i class="bi bi-x mr-1"></i>Cancel
     </button>
     <button id="modal-submit" type="submit" class="btn btn-primary">
-      <i class="bi bi-check-lg me-1"></i>Save
+      <i class="bi bi-check-lg mr-1"></i>Save
     </button>
   </div>
 </form>
@@ -60,7 +60,7 @@
 <script>
   var submit_button = document.getElementById("modal-submit");
   function onSubmit() {
-    submit_button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Saving…';
+    submit_button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status"></span>Saving…';
     submit_button.disabled = true;
   }
 </script>
@@ -68,7 +68,7 @@
 <script>
   var delete_button = document.getElementById("modal-delete");
   function onDelete() {
-    delete_button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Removing…';
+    delete_button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status"></span>Removing…';
     delete_button.disabled = true;
   }
 </script>

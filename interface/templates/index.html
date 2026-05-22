@@ -7,7 +7,7 @@
   <!-- MyStrom Section -->
   <div class="d-flex align-items-center mt-4 mb-3">
     <h2 class="mb-0 mr-3">
-      <i class="bi bi-plug-fill text-primary me-2"></i>MyStrom Devices
+      <i class="bi bi-plug-fill text-primary mr-2"></i>MyStrom Devices
     </h2>
     <span class="badge badge-pill badge-primary ml-2">{{ devices|length }}</span>
   </div>
@@ -36,7 +36,7 @@
       hx-target="#dialog"
       class="btn btn-primary mr-2"
     >
-      <i class="bi bi-plus-circle me-1"></i>Add Device
+      <i class="bi bi-plus-circle mr-1"></i>Add Device
     </button>
     <button
       type="button"
@@ -47,7 +47,7 @@
       disabled
       title="Bulk delete is disabled for safety"
     >
-      <i class="bi bi-trash me-1"></i>Delete All
+      <i class="bi bi-trash mr-1"></i>Delete All
     </button>
   </div>
 
@@ -56,7 +56,7 @@
   <!-- Shelly Section -->
   <div class="d-flex align-items-center mb-3">
     <h2 class="mb-0 mr-3">
-      <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Shelly 3EM Devices
+      <i class="bi bi-lightning-charge-fill text-warning mr-2"></i>Shelly 3EM Devices
     </h2>
     <span class="badge badge-pill badge-warning ml-2">{{ shelly_devices|length }}</span>
   </div>
@@ -85,7 +85,7 @@
       hx-target="#dialog"
       class="btn btn-warning mr-2"
     >
-      <i class="bi bi-plus-circle me-1"></i>Add Device
+      <i class="bi bi-plus-circle mr-1"></i>Add Device
     </button>
     <button
       type="button"
@@ -96,7 +96,7 @@
       disabled
       title="Bulk delete is disabled for safety"
     >
-      <i class="bi bi-trash me-1"></i>Delete All
+      <i class="bi bi-trash mr-1"></i>Delete All
     </button>
   </div>
 
@@ -159,7 +159,7 @@
             document.getElementById("modal-body").innerHTML = response;
 
             const submit_button = document.getElementById("modal-submit");
-            submit_button.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save';
+            submit_button.innerHTML = '<i class="bi bi-check-lg mr-1"></i>Save';
             submit_button.disabled = false;
           }
         }
