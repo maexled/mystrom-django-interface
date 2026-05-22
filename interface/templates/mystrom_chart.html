@@ -61,6 +61,7 @@
             " hours</h5>";
 
           const xAxisList = results.map((entry) => entry.date);
+          chartElement.innerHTML = "";
           await renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
           resolve();
         }

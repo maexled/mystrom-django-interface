@@ -86,6 +86,7 @@
             "kWh</b><br>";
 
           const xAxisList = results.map((entry) => entry.date);
+          chartElement.innerHTML = "";
           await renderShellyChart(powerList, emeterSeries, xAxisList, chartElement);
           resolve();
         }

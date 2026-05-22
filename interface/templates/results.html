@@ -425,7 +425,6 @@
     const { startDate, endDate } = getStartAndEndDate(id);
 
     setTimeout(async () => {
-      chartDiv.innerHTML = "";
       if (device_type === "shelly") {
         await loadShellyChart(id, elementId, startDate, endDate);
       } else {
