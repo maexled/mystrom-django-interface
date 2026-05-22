@@ -4,22 +4,29 @@
 <tr id="device-{{ device.id }}" class="device-row">
   <td>{{ device.id }}</td>
   <td>{{ device.name }}</td>
-  <td>{{ device.ip }}</td>
+  <td><code>{{ device.ip }}</code></td>
   {% if device.active %}
-  <td class="text-success">Active</td>
+  <td><span class="badge badge-success">Active</span></td>
   {% else %}
-  <td class="text-danger">Not Active</td>
+  <td><span class="badge badge-secondary">Inactive</span></td>
   {% endif %}
   <td>
     {% if modelclass == 'Shelly3EMDevice' %}
-    <button class="btn btn-primary btn-sm" hx-get="{% url 'shelly_device' id=device.id %}" hx-target="#dialog">
+    <button class="btn btn-outline-primary btn-sm" hx-get="{% url 'shelly_device' id=device.id %}" hx-target="#dialog">
     {% elif modelclass == "MystromDevice" %}
-    <button class="btn btn-primary btn-sm" hx-get="{% url 'mystrom_device' id=device.id %}" hx-target="#dialog">
+    <button class="btn btn-outline-primary btn-sm" hx-get="{% url 'mystrom_device' id=device.id %}" hx-target="#dialog">
     {% endif %}
-      Edit Device
+      <i class="bi bi-pencil me-1"></i>Edit
     </button>
-
   </td>
 </tr>
 {% endwith %}
 {% endfor %}
+{% if not devices %}
+<tr>
+  <td colspan="5" class="text-center text-muted py-4">
+    <i class="bi bi-inbox" style="font-size: 1.5rem;"></i>
+    <p class="mb-0 mt-1">No devices configured yet.</p>
+  </td>
+</tr>
+{% endif %}

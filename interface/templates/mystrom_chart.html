@@ -25,7 +25,7 @@
         "/results/" +
         startQuery +
         endQuery,
-        data => {
+        async data => {
           const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
@@ -61,7 +61,8 @@
             " hours</h5>";
 
           const xAxisList = results.map((entry) => entry.date);
-          renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
+          await renderMystromChart(powerList, wsList, temperatureList, xAxisList, chartElement);
+          resolve();
         }
       ).fail((jqXHR, textStatus, errorThrown) => {
         console.log("Error: " + errorThrown);
@@ -74,8 +75,6 @@
             '<h3 class="text-danger">Error while requesting data of device ' +
             id +
             "</h3>";
-      }).always(() => {
-        console.log("Request finished");
         resolve();
       });
     });
@@ -163,7 +162,7 @@
       );
     }
     const chart = new ApexCharts(chartElement, options);
-    chart.render();
+    return chart.render();
   }
 
   {% elif CHART_TYPE == "uplot" %}

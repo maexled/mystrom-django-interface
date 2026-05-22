@@ -1,88 +1,105 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Devices – Smart Devices{% endblock %}
 {% block content %}
 <div class="container">
-  <div class="px-5 my-5 text-center">
-    <h1>MyStrom Devices</h1>
-    <p></p>
+
+  <!-- MyStrom Section -->
+  <div class="d-flex align-items-center mt-4 mb-3">
+    <h2 class="mb-0 mr-3">
+      <i class="bi bi-plug-fill text-primary me-2"></i>MyStrom Devices
+    </h2>
+    <span class="badge badge-pill badge-primary ml-2">{{ devices|length }}</span>
   </div>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>IP</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="mystrom-devices-list">
-      {% include "device_table_entries.html" with devices=devices %}
-    </tbody>
-  </table>
-
-  <!-- Button trigger modal -->
-  <button
-    hx-get="{% url 'mystrom_devices' %}"
-    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-    hx-target="#dialog"
-    class="btn btn-primary"
-  >
-    Add Device
-  </button>
-
-  <button
-    type="button"
-    class="btn btn-danger"
-    hx-delete="{% url 'mystrom_devices' %}"
-    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-    hx-target="#mystrom-devices-list"
-    disabled
-  >
-    Delete Devices
-  </button>
-
-  <div class="px-5 my-5 text-center">
-    <h1>Shelly Devices</h1>
-    <p></p>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead class="thead-light">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>IP</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="mystrom-devices-list">
+        {% include "device_table_entries.html" with devices=devices %}
+      </tbody>
+    </table>
   </div>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>IP</th>
-        <th>Active</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="shelly-devices-list">
-      {% include "device_table_entries.html" with devices=shelly_devices %}
-    </tbody>
-  </table>
+  <div class="mb-4">
+    <button
+      hx-get="{% url 'mystrom_devices' %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      hx-target="#dialog"
+      class="btn btn-primary mr-2"
+    >
+      <i class="bi bi-plus-circle me-1"></i>Add Device
+    </button>
+    <button
+      type="button"
+      class="btn btn-outline-danger"
+      hx-delete="{% url 'mystrom_devices' %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      hx-target="#mystrom-devices-list"
+      disabled
+      title="Bulk delete is disabled for safety"
+    >
+      <i class="bi bi-trash me-1"></i>Delete All
+    </button>
+  </div>
 
-  <!-- Button trigger modal -->
-  <button
-    hx-get="{% url 'shelly_devices' %}"
-    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-    hx-target="#dialog"
-    class="btn btn-primary"
-  >
-    Add Device
-  </button>
+  <hr class="my-4">
 
-  <button
-    type="button"
-    class="btn btn-danger"
-    hx-delete="{% url 'shelly_devices' %}"
-    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-    hx-target="#shelly-devices-list"
-    disabled
-  >
-    Delete Devices
-  </button>
+  <!-- Shelly Section -->
+  <div class="d-flex align-items-center mb-3">
+    <h2 class="mb-0 mr-3">
+      <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Shelly 3EM Devices
+    </h2>
+    <span class="badge badge-pill badge-warning ml-2">{{ shelly_devices|length }}</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead class="thead-light">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>IP</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="shelly-devices-list">
+        {% include "device_table_entries.html" with devices=shelly_devices %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mb-4">
+    <button
+      hx-get="{% url 'shelly_devices' %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      hx-target="#dialog"
+      class="btn btn-warning mr-2"
+    >
+      <i class="bi bi-plus-circle me-1"></i>Add Device
+    </button>
+    <button
+      type="button"
+      class="btn btn-outline-danger"
+      hx-delete="{% url 'shelly_devices' %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      hx-target="#shelly-devices-list"
+      disabled
+      title="Bulk delete is disabled for safety"
+    >
+      <i class="bi bi-trash me-1"></i>Delete All
+    </button>
+  </div>
+
 </div>
 
 <!-- Placeholder for the modal -->
@@ -91,7 +108,7 @@
   class="modal fade"
   tabindex="-1"
   role="dialog"
-  aria-labelledby="exampleModalLabel"
+  aria-labelledby="createModalLabel"
   aria-hidden="true"
 >
   <div id="dialog" class="modal-dialog" role="document"></div>
@@ -110,9 +127,9 @@
         if (e.detail.requestConfig.verb == "post") {
           const deviceName = e.detail.requestConfig.parameters.name;
           $("#createModal").modal("hide");
-          toastr.success("Device " + deviceName + " created");
+          toastr.success("Device <b>" + deviceName + "</b> created successfully.");
         } else if (e.detail.requestConfig.verb == "delete") {
-          toastr.error("All devices deleted");
+          toastr.error("All devices deleted.");
         }
       } else if (
         e.detail.requestConfig.path.startsWith("{% url 'mystrom_devices' %}") ||
@@ -121,9 +138,9 @@
         const deviceName = e.detail.requestConfig.parameters.name;
         $("#createModal").modal("hide");
         if (e.detail.requestConfig.verb == "post") {
-          toastr.success("Device " + deviceName + " updated");
+          toastr.success("Device <b>" + deviceName + "</b> updated successfully.");
         } else if (e.detail.requestConfig.verb == "delete") {
-          toastr.error("Device " + deviceName + " deleted");
+          toastr.warning("Device <b>" + deviceName + "</b> deleted.");
         }
       }
     });
@@ -136,22 +153,19 @@
         e.detail.requestConfig.path.startsWith("{% url 'shelly_devices' %}")
       ) {
         if (e.detail.requestConfig.verb == "post") {
-          // when it contains invalid feedback, we do no want to swap and show error in form
           if (e.detail.xhr.response.includes("invalid-feedback")) {
             e.detail.shouldSwap = false;
             const response = e.detail.xhr.response;
             document.getElementById("modal-body").innerHTML = response;
 
-            // reset save buton from "Saving..." to "Save"
             const submit_button = document.getElementById("modal-submit");
-            submit_button.innerHTML = "Save";
+            submit_button.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save';
             submit_button.disabled = false;
           }
         }
       }
     });
 
-    // Remove dialog content after hiding
     $("#createModal").on("hidden.bs.modal", () => {
       document.getElementById("dialog").innerHTML = "";
     });

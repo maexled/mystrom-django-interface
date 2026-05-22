@@ -1,14 +1,47 @@
 {% extends "base.html" %}
 {% load classname %}
 {% load static %}
+
+{% block title %}{{ device.name }} – Smart Devices{% endblock %}
+
 {% block content %}
-<div id="chartContainer">
-  <div id="loading" class="d-flex justify-content-center">
-    <div class="spinner-border" style="width: 6rem; height: 6rem; margin-top: 100px" role="status">
-      <span class="sr-only">Loading...</span>
+{% with device|classname as modelclass %}
+<div class="container">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'results' %}">Results</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ device.name }}</li>
+    </ol>
+  </nav>
+
+  <!-- Device header -->
+  <div class="d-flex align-items-center mb-4">
+    {% if modelclass == 'Shelly3EMDevice' %}
+    <i class="bi bi-lightning-charge-fill text-warning mr-3" style="font-size: 2rem;"></i>
+    <div>
+      <h2 class="mb-0">{{ device.name }}</h2>
+      <small class="text-muted"><span class="badge badge-warning mr-1">Shelly 3EM</span> <code>{{ device.ip }}</code></small>
+    </div>
+    {% elif modelclass == "MystromDevice" %}
+    <i class="bi bi-plug-fill text-primary mr-3" style="font-size: 2rem;"></i>
+    <div>
+      <h2 class="mb-0">{{ device.name }}</h2>
+      <small class="text-muted"><span class="badge badge-primary mr-1">MyStrom</span> <code>{{ device.ip }}</code></small>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Chart container -->
+  <div id="chartContainer">
+    <div id="loading" class="d-flex justify-content-center py-5">
+      <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
+        <span class="sr-only">Loading…</span>
+      </div>
     </div>
   </div>
 </div>
+{% endwith %}
 {% endblock %}
 
 {% block scripts %}
@@ -24,6 +57,7 @@
 {% elif modelclass == "MystromDevice" %}
 {% include "mystrom_chart.html" %}
 {% endif %}
+
 <script>
   const params = new URLSearchParams(window.location.search);
   const last = params.get("last");
@@ -50,36 +84,23 @@
   createdElement.appendChild(chartElement);
 
   function dateFormat(date) {
-    return date.toISOString()
+    return date.toISOString();
   }
   const now = new Date();
   const start = new Date(now);
   if (!last) {
-    start.setHours(0);
-    start.setMinutes(0);
-    start.setSeconds(0);
+    start.setHours(0, 0, 0, 0);
   } else {
     start.setMinutes(start.getMinutes() - last);
   }
 
   setTimeout(async () => {
     {% if modelclass == 'Shelly3EMDevice' %}
-    await loadShellyChart(
-      id,
-      elementId,
-      dateFormat(start),
-      dateFormat(now)
-    );
+    await loadShellyChart(id, elementId, dateFormat(start), dateFormat(now));
     {% elif modelclass == "MystromDevice" %}
-    await loadMystromChart(
-      id,
-      elementId,
-      dateFormat(start),
-      dateFormat(now)
-    );
+    await loadMystromChart(id, elementId, dateFormat(start), dateFormat(now));
     {% endif %}
-    const loadingElement = document.getElementById("loading");
-    loadingElement.remove();
+    document.getElementById("loading").remove();
   });
 </script>
 {% endwith %}

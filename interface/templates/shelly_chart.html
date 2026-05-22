@@ -25,7 +25,7 @@
         "/results/" +
         startQuery +
         endQuery,
-        function (data) {
+        async data => {
           const results = data.results;
           const chartElement = document.getElementById(elementId + "-chart");
           const informationElement = document.getElementById(
@@ -86,7 +86,8 @@
             "kWh</b><br>";
 
           const xAxisList = results.map((entry) => entry.date);
-          renderShellyChart(powerList, emeterSeries, xAxisList, chartElement);
+          await renderShellyChart(powerList, emeterSeries, xAxisList, chartElement);
+          resolve();
         }
       ).fail((jqXHR, textStatus, errorThrown) => {
         console.log("Error: " + errorThrown);
@@ -99,7 +100,6 @@
             '<h3 class="text-danger">Error while requesting data of device ' +
             id +
             "</h3>";
-      }).always(() => {
         resolve();
       });
     });
@@ -180,7 +180,7 @@
       );
     }
     const chart = new ApexCharts(chartElement, options);
-    chart.render();
+    return chart.render();
   }
 
   {% elif CHART_TYPE == "uplot" %}
