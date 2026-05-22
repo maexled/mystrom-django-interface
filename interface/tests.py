@@ -15,7 +15,8 @@ class MystromDevicesTestCase(TestCase):
         self.assertContains(response, "test")
         self.assertContains(response, "127.0.0.1")
         self.assertContains(response, "<td>test</td>")
-        self.assertContains(response, "<td>127.0.0.1</td>")
+        # IP is now wrapped in <code> for readability
+        self.assertContains(response, "<code>127.0.0.1</code>")
         self.assertEqual(len(MystromDevice.objects.all()), 3)
 
     def test_create_device_fail_invalid_ip(self):
@@ -29,13 +30,15 @@ class MystromDevicesTestCase(TestCase):
     def test_delete_devices(self):
         url = reverse("mystrom_devices")
         response = self.client.delete(url)
-        self.assertNotContains(response, "<tr>")
+        # No device rows remain (empty-state row uses class="device-row" only for real devices)
+        self.assertNotContains(response, 'class="device-row"')
         self.assertEqual(len(MystromDevice.objects.all()), 0)
 
     def test_get_create_device_form(self):
         url = reverse("mystrom_devices")
         response = self.client.get(url)
-        self.assertContains(response, "Create")
+        # Modal title changed from "Create MystromDevice" to "Add Mystrom Device"
+        self.assertContains(response, "Add")
         self.assertContains(response, "<form")
         self.assertContains(response, "</form>")
 
@@ -70,7 +73,7 @@ class MystromDevicesTestCase(TestCase):
     def test_get_update_device_form(self):
         url = reverse("mystrom_device", args=(self.device1.id,))
         response = self.client.get(url)
-        self.assertContains(response, "Edit device")
+        self.assertContains(response, "Edit Device")
         self.assertContains(response, "<form")
         self.assertContains(response, "</form>")
 
